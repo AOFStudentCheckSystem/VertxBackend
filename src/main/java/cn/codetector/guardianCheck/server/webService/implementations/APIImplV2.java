@@ -31,6 +31,7 @@ import java.util.List;
 @WebAPIImpl(prefix = "v2")
 public class APIImplV2 implements IWebAPIImpl {
     private Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+
     @Override
     public void initAPI(@NotNull Router router, @NotNull Vertx sharedVertx, @NotNull JDBCClient dbClient) {
         JWTAuth jwtAuth = JWTAuth.create(sharedVertx, new JsonObject().put("keyStore", new JsonObject()
@@ -44,8 +45,8 @@ public class APIImplV2 implements IWebAPIImpl {
             ctx.response().putHeader("Access-Control-Allow-Headers", "Authorization");
             ctx.response().end();
         });
-        router.route().handler(ctx ->{
-            ctx.response().putHeader("Content-Type","text/json; charset=utf-8");
+        router.route().handler(ctx -> {
+            ctx.response().putHeader("Content-Type", "text/json; charset=utf-8");
             ctx.next();
         });
         router.route("/api/*").handler(ctx -> {
@@ -523,7 +524,7 @@ public class APIImplV2 implements IWebAPIImpl {
                                             .add(inTime)
                                             .add(outTime == null ? "" : outTime)
                                             .add(eventId));
-                                    addDuplicate.add(new JsonObject(stuObj.toString()).put("event",eventId));
+                                    addDuplicate.add(new JsonObject(stuObj.toString()).put("event", eventId));
                                 }
                             });
                             dbClient.getConnection(co -> {
@@ -595,6 +596,7 @@ public class APIImplV2 implements IWebAPIImpl {
             logger.error(e);
         });
     }
+
     private void verifyUpdateEvent(JDBCClient dbClient, RoutingContext ctx, Handler<AsyncResult<Boolean>> handler) {
         ctx.user().isAuthorised("updateEvent", v -> {
             if (v.result()) {

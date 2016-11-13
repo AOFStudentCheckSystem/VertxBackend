@@ -14,12 +14,12 @@ import io.vertx.ext.web.Router
 class EmoticonAPI : IWebAPIImpl {
     override fun initAPI(router: Router, sharedVertx: Vertx, dbClient: JDBCClient) {
         router.route().handler { ctx ->
-            ctx.response().putHeader("Content-Type","text/json; charset=utf-8")
+            ctx.response().putHeader("Content-Type", "text/json; charset=utf-8")
             ctx.next()
         }
         router.route().handler {
             ctx ->
-            ctx.response().end(JsonObject().put("emoticon",EmoticonManager.get()).toString())
+            ctx.response().end(JsonObject().put("emoticon", EmoticonManager.get()).toString())
         }
     }
 }

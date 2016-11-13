@@ -5,4 +5,4 @@ package cn.codetector.guardianCheck.server.webService
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class WebAPIImpl(val prefix:String)
+annotation class WebAPIImpl(val prefix: String)

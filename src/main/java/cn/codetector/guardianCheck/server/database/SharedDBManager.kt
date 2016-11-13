@@ -1,6 +1,5 @@
 package cn.codetector.guardianCheck.server.database
 
-import cn.codetector.util.Configuration.Configuration
 import cn.codetector.util.Configuration.ConfigurationManager
 import io.vertx.core.json.JsonObject
 

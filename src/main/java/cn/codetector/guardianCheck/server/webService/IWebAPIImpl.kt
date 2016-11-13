@@ -5,5 +5,5 @@ import io.vertx.ext.jdbc.JDBCClient
 import io.vertx.ext.web.Router
 
 interface IWebAPIImpl {
-    fun initAPI(router:Router, sharedVertx:Vertx, dbClient:JDBCClient)
+    fun initAPI(router: Router, sharedVertx: Vertx, dbClient: JDBCClient)
 }
