@@ -44,6 +44,10 @@ public class APIImplV2 implements IWebAPIImpl {
             ctx.response().putHeader("Access-Control-Allow-Headers", "Authorization");
             ctx.response().end();
         });
+        router.route().handler(ctx ->{
+            ctx.response().putHeader("Content-Type","text/json; charset=utf-8");
+            ctx.next();
+        });
         router.route("/api/*").handler(ctx -> {
             ctx.response().putHeader("Access-Control-Allow-Origin", "*");
             ctx.next();
