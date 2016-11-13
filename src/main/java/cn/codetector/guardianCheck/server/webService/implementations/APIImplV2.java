@@ -37,7 +37,7 @@ public class APIImplV2 implements IWebAPIImpl {
                 .put("path", "keystore.jceks")
                 .put("type", "jceks")
                 .put("password", "secret")));
-        JWTAuthHandler authHandler = JWTAuthHandler.create(jwtAuth, "/api/auth");
+        JWTAuthHandler authHandler = JWTAuthHandler.create(jwtAuth, "/v2/api/auth");
         router.options("/api/*").handler(ctx -> {
             ctx.response().putHeader("Access-Control-Allow-Origin", "*");
             ctx.response().putHeader("Access-Control-Allow-Methods", "GET, POST OPTIONS");

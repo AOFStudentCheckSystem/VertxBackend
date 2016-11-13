@@ -36,6 +36,7 @@ object WebService {
     }
 
     fun initService(sharedVertx: Vertx, jdbcClient: JDBCClient){
+
         this.isServiceRunning = true;
         val router = Router.router(sharedVertx)
 
@@ -43,7 +44,6 @@ object WebService {
             serviceImpl->
             var prefix = ""
             for (annotation in serviceImpl.javaClass.declaredAnnotations){
-                println(annotation)
                 if (annotation is WebAPIImpl){
                     prefix = annotation.prefix
                 }

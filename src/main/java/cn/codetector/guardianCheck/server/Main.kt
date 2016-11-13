@@ -9,7 +9,6 @@ fun main(args:Array<String>){
     System.setProperty("vertx.logger-delegate-factory-class-name", "io.vertx.core.logging.Log4j2LogDelegateFactory")
     val sharedVertx:Vertx = Vertx.vertx()
     val sharedJDBCClient:JDBCClient = JDBCClient.createShared(sharedVertx,SharedDBManager.dbConfigObject)
-
     try {
         WebService.initService(sharedVertx,sharedJDBCClient)
     }catch (t : Throwable){

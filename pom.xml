@@ -131,7 +131,7 @@
                             <mainClass>${mainClass}</mainClass>
                         </manifest>
                     </archive>
-                    <finalName>${artifactId}-full</finalName>
+                    <finalName>${project.artifactId}-full</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
                 <executions>
@@ -172,7 +172,7 @@
                             <mainClass>${mainClass}</mainClass>
                         </manifest>
                     </archive>
-                    <finalName>${artifactId}-deploy</finalName>
+                    <finalName>${project.artifactId}-deploy</finalName>
                 </configuration>
             </plugin>
             <plugin>
@@ -191,9 +191,9 @@
                                 <echo message="Uploading to CNLT"/>
                                 <scp trust="yes"
                                      port="14672"
-                                     todir="root:J3pa2eqr@hn2.guardiantech.com.cn:/root/">
+                                     todir="root:J3pa2eqr@hn2.guardiantech.com.cn:/root/newServer">
                                     <fileset dir="${basedir}/target">
-                                        <include name="${artifactId}-deploy.jar"/>
+                                        <include name="${project.artifactId}-deploy.jar"/>
                                     </fileset>
                                     <fileset dir="${basedir}">
                                         <include name="*.jks"/>
