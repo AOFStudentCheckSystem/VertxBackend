@@ -1,7 +1,6 @@
- package cn.codetector.guardianCheck.server
+package cn.codetector.guardianCheck.server
 
 import cn.codetector.guardianCheck.server.database.SharedDBManager
-import cn.codetector.guardianCheck.server.webService.WebService
 import io.vertx.core.Vertx
 import io.vertx.ext.jdbc.JDBCClient
 
