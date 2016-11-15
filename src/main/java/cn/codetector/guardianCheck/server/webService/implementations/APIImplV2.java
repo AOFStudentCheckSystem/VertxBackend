@@ -273,7 +273,7 @@ public class APIImplV2 implements IWebAPIImpl {
                 if (v.result()) {
                     dbClient.getConnection(conn -> {
                         if (conn.succeeded()) {
-                            conn.result().queryWithParams("SELECT `studentID` as `studentId` , `checkinTime`, `checkoutTime` FROM `dummycheck` WHERE `event` = ?",
+                            conn.result().queryWithParams("SELECT `studentID` as `studentId` ,`checkinTime`, NULL as `checkoutTime` FROM `dummycheck` WHERE `event` = ?",
                                     new JsonArray().add(ctx.pathParam("eventId")), res -> {
                                         if (res.succeeded()) {
                                             ctx.response().end(new JsonObject().put("students", res.result().getRows()).toString());
@@ -506,6 +506,7 @@ public class APIImplV2 implements IWebAPIImpl {
                 if (result.result()) {
                     String eventId = ctx.pathParam("eventId");
                     String dataStr = ctx.request().getFormAttribute("data");
+                    logger.trace("Add Request TargetEvent:"+eventId +" DATA:"+dataStr);
                     if (dataStr != null) {
                         JsonObject data = new JsonObject(dataStr);
                         // not required
@@ -517,8 +518,18 @@ public class APIImplV2 implements IWebAPIImpl {
                                 if (o instanceof JsonObject) {
                                     JsonObject stuObj = ((JsonObject) o);
                                     String stuId = stuObj.getString("id");
-                                    String inTime = stuObj.getString("checkin");
-                                    String outTime = stuObj.getString("checkout");
+                                    String inTime;
+                                    String outTime;
+                                    if (stuObj.getValue("checkout") instanceof String){
+                                        outTime = stuObj.getString("checkout");
+                                    }else{
+                                        outTime = String.valueOf(stuObj.getLong("checkout"));
+                                    }
+                                    if (stuObj.getValue("checkin") instanceof String){
+                                        inTime = stuObj.getString("checkin");
+                                    }else{
+                                        inTime = String.valueOf(stuObj.getLong("checkin"));
+                                    }
                                     addList.add(new JsonArray()
                                             .add(stuId)
                                             .add(inTime)
