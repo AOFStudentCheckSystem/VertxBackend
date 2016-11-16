@@ -2,6 +2,7 @@ package cn.codetector.guardianCheck.server.webService.implementations;
 
 import cn.codetector.guardianCheck.server.webService.IWebAPIImpl;
 import cn.codetector.guardianCheck.server.webService.WebAPIImpl;
+import cn.codetector.util.Validator.MD5;
 import cn.codetector.util.Validator.SHA;
 import com.google.common.io.ByteStreams;
 import io.vertx.core.AsyncResult;
@@ -211,6 +212,7 @@ public class APIImplV2 implements IWebAPIImpl {
                         InputStream is = new FileInputStream(magic);
                         byte[] bytes = ByteStreams.toByteArray(is);
                         Buffer buffer = Buffer.buffer(bytes);
+                        ctx.response().putHeader("etag", MD5.getMD5String(bytes));
                         ctx.response().end(buffer);
                     } catch (IOException e) {
                         ctx.fail(404);
