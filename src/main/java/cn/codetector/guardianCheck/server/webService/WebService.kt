@@ -60,7 +60,7 @@ object WebService {
 
         router.route().handler {
             ctx ->
-            ctx.response().end("Whops!")
+            ctx.response().end("You should not land here.. Whoops!")
         }
 
         val sslServer = sharedVertx.createHttpServer(HttpServerOptions()
