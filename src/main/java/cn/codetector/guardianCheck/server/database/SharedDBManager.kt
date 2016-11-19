@@ -12,7 +12,7 @@ object SharedDBManager {
         private set
 
     init {
-        dbPrefix = dbConfig.getStringValue("db_prefix", "gm_")
+        dbPrefix = dbConfig.getStringValue("db_prefix", "dummy")
     }
 
     val dbConfigObject: JsonObject

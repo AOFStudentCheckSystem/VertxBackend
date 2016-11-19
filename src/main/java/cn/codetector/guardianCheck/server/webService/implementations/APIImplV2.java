@@ -71,7 +71,7 @@ public class APIImplV2 implements IWebAPIImpl {
                 if (conn.succeeded()) {
                     String username = ctx.request().getFormAttribute("username");
                     String pw = SHA.getSHA256String(ctx.request().getFormAttribute("password"));
-                    conn.result().queryWithParams("SELECT (SELECT `permissions` FROM `dummypermission` WHERE `dummyauth`.`role`=`dummypermission`.`role`) as `permissions`, `password` FROM `dummyauth` WHERE `username`=?", new JsonArray().add(username), res -> {
+                    conn.result().queryWithParams("SELECT (SELECT `permissions` FROM `dummyroles` WHERE `dummyauth`.`role`=`dummyroles`.`role`) as `permissions`, `password` FROM `dummyauth` WHERE `username`=?", new JsonArray().add(username), res -> {
                         if (res.succeeded()) {
                             if (res.result().getNumRows() > 0 && res.result().getRows().get(0).getString("password").equals(pw)) {
                                 try {
