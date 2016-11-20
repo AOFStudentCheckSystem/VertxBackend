@@ -1,20 +1,28 @@
 package cn.codetector.guardianCheck.server.permission
 
+import io.vertx.core.json.JsonArray
 import java.util.*
 
-class PermissionMap : ArrayList<Permission>() {
-    override fun add(element: Permission): Boolean {
-        if (!this.contains(element)) {
-            return super.add(element)
-        }
-        return false;
+class PermissionMap {
+    val permissions:HashMap<String, Permission> = HashMap()
+
+    fun addPermission(permission: Permission){
+        permissions.put(permission.name,permission)
     }
 
-    override fun addAll(elements: Collection<Permission>): Boolean {
-        elements.forEach {
-            element ->
-            this.add(element)
+    fun allPermissions():List<Permission>{
+        return ArrayList(permissions.values)
+    }
+
+    override fun toString(): String {
+        val rootArray = JsonArray()
+        permissions.values.forEach { permission ->
+            rootArray.add(permission.name)
         }
-        return true;
+        return rootArray.toString()
+    }
+
+    fun clear() {
+        this.permissions.clear()
     }
 }
