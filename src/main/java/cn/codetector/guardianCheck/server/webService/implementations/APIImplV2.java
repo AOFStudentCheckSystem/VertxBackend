@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @WebAPIImpl(prefix = "v2")
 public class APIImplV2 implements IWebAPIImpl {
@@ -293,29 +294,6 @@ public class APIImplV2 implements IWebAPIImpl {
                 }
             });
         });
-        router.get("/api/event/:eventId/detail/mobile").handler(ctx -> {
-            ctx.user().isAuthorised("readEvent", v -> {
-                if (v.result()) {
-                    dbClient.getConnection(conn -> {
-                        if (conn.succeeded()) {
-                            conn.result().queryWithParams("SELECT `studentID`,`checkinTime`,`checkoutTime` FROM `dummycheck` WHERE `event` = ?",
-                                    new JsonArray().add(ctx.pathParam("eventId")), res -> {
-                                        if (res.succeeded()) {
-                                            ctx.response().end(new JsonObject().put("students", res.result().getRows()).toString());
-                                        } else {
-                                            ctx.fail(res.cause());
-                                        }
-                                        conn.result().close();
-                                    });
-                        } else {
-                            ctx.fail(conn.cause());
-                        }
-                    });
-                } else {
-                    ctx.fail(401);
-                }
-            });
-        });
         router.post("/api/event/:eventId/complete").handler(ctx -> {
             ctx.user().isAuthorised("updateEvent", v -> {
                 if (v.result()) {
@@ -334,6 +312,70 @@ public class APIImplV2 implements IWebAPIImpl {
                                     });
                         } else {
                             ctx.fail(conn.cause());
+                        }
+                    });
+                } else {
+                    ctx.fail(401);
+                }
+            });
+        });
+        router.post("/api/event/:eventId/checkout").handler(ctx -> {
+            Logger logger = LoggerFactory.getLogger("apiv2.handler.event.checkout");
+            String eventId = ctx.pathParam("eventId");
+
+            ctx.user().isAuthorised("checkoutEvent", a -> {
+                if (a.succeeded()) {
+                    dbClient.getConnection(conn -> {
+                        if (conn.succeeded()) {
+                            conn.result().queryWithParams("SELECT * FROM `dummyevent` WHERE `eventId` = ?", new JsonArray().add(eventId), handler -> {
+                                if (handler.succeeded()) {
+                                    if (handler.result().getNumRows() == 1) {
+                                        if (handler.result().getRows().get(0).getInteger("eventStatus") < 2) {
+                                            conn.result().updateWithParams("UPDATE `dummyevent` SET `eventStatus` = -1 WHERE `eventId` = ?", new JsonArray().add(eventId), handler1 -> {
+                                                if (handler1.succeeded()) {
+                                                    String accessKey = UUID.randomUUID().toString();
+                                                    conn.result().updateWithParams("INSERT INTO `dummyofflineauth (`eventId`, `authkey`) VALUES (?,?)",new JsonArray().add(eventId).add(accessKey), handler11 -> {
+                                                        if (handler11.succeeded()) {
+                                                            conn.result().queryWithParams("SELECT `studentID` as `studentId` ,`checkinTime`, NULL as `checkoutTime` FROM `dummycheck` WHERE `event` = ?", new JsonArray().add(eventId), handler2 -> {
+                                                                if (handler2.succeeded()) {
+                                                                    ctx.response().end(new JsonObject().put("returnKey",accessKey).put("students",handler2.result().getRows()).toString());
+                                                                } else {
+                                                                    logger.error("Failed to execute sql query", handler.cause());
+                                                                    ctx.fail(500);
+                                                                    conn.result().close();
+                                                                }
+                                                            });
+                                                        } else {
+                                                            logger.error("Failed to execute sql query - UUID Key Assignment", handler.cause());
+                                                            ctx.fail(500);
+                                                            conn.result().close();
+                                                        }
+                                                    });
+                                                } else {
+                                                    logger.error("Failed to execute sql query", handler.cause());
+                                                    ctx.fail(500);
+                                                    conn.result().close();
+                                                }
+                                            });
+                                        } else {
+                                            ctx.fail(400);
+                                            logger.warn("Attempted to checkout a completed event. Giving Up");
+                                            conn.result().close();
+                                        }
+                                    } else {
+                                        ctx.fail(400);
+                                        logger.warn("Multiple or No event match found. Giving up");
+                                        conn.result().close();
+                                    }
+                                } else {
+                                    logger.error("Failed to execute sql query", handler.cause());
+                                    ctx.fail(500);
+                                    conn.result().close();
+                                }
+                            });
+                        } else {
+                            logger.error("Failed to obtain db connection", conn.cause());
+                            ctx.fail(500);
                         }
                     });
                 } else {
@@ -508,7 +550,7 @@ public class APIImplV2 implements IWebAPIImpl {
                 if (result.result()) {
                     String eventId = ctx.pathParam("eventId");
                     String dataStr = ctx.request().getFormAttribute("data");
-                    logger.trace("Add Request TargetEvent:"+eventId +" DATA:"+dataStr);
+                    logger.trace("Add Request TargetEvent:" + eventId + " DATA:" + dataStr);
                     if (dataStr != null) {
                         JsonObject data = new JsonObject(dataStr);
                         // not required
@@ -522,14 +564,14 @@ public class APIImplV2 implements IWebAPIImpl {
                                     String stuId = stuObj.getString("id");
                                     String inTime;
                                     String outTime;
-                                    if (stuObj.getValue("checkout") instanceof String){
+                                    if (stuObj.getValue("checkout") instanceof String) {
                                         outTime = stuObj.getString("checkout");
-                                    }else{
+                                    } else {
                                         outTime = String.valueOf(stuObj.getLong("checkout"));
                                     }
-                                    if (stuObj.getValue("checkin") instanceof String){
+                                    if (stuObj.getValue("checkin") instanceof String) {
                                         inTime = stuObj.getString("checkin");
-                                    }else{
+                                    } else {
                                         inTime = String.valueOf(stuObj.getLong("checkin"));
                                     }
                                     addList.add(new JsonArray()

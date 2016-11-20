@@ -31,8 +31,12 @@ object PermissionManager {
                             serverPermissions.addPermission(Permission(row.getInteger("id"),row.getString("name"),row.getString("description")))
                         }
                     }
+                    conn.result().close()
                 })
             }
+        }
+        dbClient!!.getConnection { conn ->
+
         }
     }
 }
