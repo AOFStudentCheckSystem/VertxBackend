@@ -4,6 +4,7 @@ import cn.codetector.util.Configuration.Configuration
 import cn.codetector.util.Configuration.ConfigurationManager
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpServerOptions
+import io.vertx.core.logging.LoggerFactory
 import io.vertx.core.net.JksOptions
 import io.vertx.ext.jdbc.JDBCClient
 import io.vertx.ext.web.Router
@@ -11,6 +12,9 @@ import org.reflections.Reflections
 import java.util.*
 
 object WebService {
+
+    private val logger = LoggerFactory.getLogger("WebService Manager")
+
     private var isServiceRunning = false
 
     private val config: Configuration = ConfigurationManager.getConfiguration("webConfig.json")
@@ -37,6 +41,7 @@ object WebService {
     }
 
     fun initService(sharedVertx: Vertx, jdbcClient: JDBCClient) {
+        logger.info("Starting WebService at Port: $httpPort with SSL=$useSSL")
 
         this.isServiceRunning = true;
         val router = Router.router(sharedVertx)

@@ -1,10 +1,10 @@
-package cn.codetector.guardianCheck.server.permission
+package cn.codetector.guardianCheck.server.data.permission
 
 import io.vertx.core.json.JsonArray
 import java.util.*
 
 class PermissionMap {
-    val permissions:HashMap<String, Permission> = HashMap()
+    val permissions: HashMap<String, Permission> = HashMap()
 
     fun addPermission(permission: Permission){
         permissions.put(permission.name,permission)

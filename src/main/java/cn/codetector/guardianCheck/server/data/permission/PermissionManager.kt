@@ -1,4 +1,4 @@
-package cn.codetector.guardianCheck.server.permission
+package cn.codetector.guardianCheck.server.data.permission
 
 import io.vertx.core.AsyncResult
 import io.vertx.core.Future
@@ -9,13 +9,13 @@ import io.vertx.ext.jdbc.JDBCClient
  * Created by codetector on 19/11/2016.
  */
 object PermissionManager {
-    private var dbClient:JDBCClient? = null
+    private var dbClient: JDBCClient? = null
     private val serverPermissions = PermissionMap()
 
     fun isInitialized():Boolean{
         return this.dbClient != null
     }
-    fun setDBClient(dbClient:JDBCClient){
+    fun setDBClient(dbClient: JDBCClient){
         this.dbClient = dbClient
     }
 

@@ -1,5 +1,6 @@
 package cn.codetector.guardianCheck.server.permission
 
+import cn.codetector.guardianCheck.server.data.permission.Permission
 import junit.framework.Assert
 import junit.framework.TestCase
 import java.util.*
