@@ -29,10 +29,11 @@ object ConsoleManager{
             if(handlers.get(args[0])!!.invoke(CommandHandlers,args) as Boolean) {
                 return
             }else{
-                println("Malformed Command")
+                System.err.println("Malformed Command")
+                return
             }
         }
-        System.out.println("No Command Found")
+        System.err.println("No Command Found")
     }
 
     init {
@@ -50,6 +51,12 @@ object ConsoleManager{
                     logger.trace("No Annotation Handler Method Found: $name")
                 }
             }
+        }
+    }
+
+    fun stop(){
+        for (monitor in monitorMap.values){
+            monitor.terminate()
         }
     }
 }
