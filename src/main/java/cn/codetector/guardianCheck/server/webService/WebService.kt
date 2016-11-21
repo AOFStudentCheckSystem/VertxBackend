@@ -3,6 +3,7 @@ package cn.codetector.guardianCheck.server.webService
 import cn.codetector.util.Configuration.Configuration
 import cn.codetector.util.Configuration.ConfigurationManager
 import io.vertx.core.Vertx
+import io.vertx.core.http.HttpServer
 import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.logging.LoggerFactory
 import io.vertx.core.net.JksOptions
@@ -13,7 +14,7 @@ import java.util.*
 
 object WebService {
 
-    private val logger = LoggerFactory.getLogger("WebService Manager")
+    private val logger = LoggerFactory.getLogger(this.javaClass)
 
     private var isServiceRunning = false
 
@@ -24,6 +25,8 @@ object WebService {
     private val sslPassword = config.getStringValue("SSLKeystorePassword", "password")
 
     private val serviceList: MutableList<IWebAPIImpl> = ArrayList<IWebAPIImpl>()
+
+    private var server:HttpServer? = null
 
     init {
         registerProviders()
@@ -41,11 +44,8 @@ object WebService {
     }
 
     fun initService(sharedVertx: Vertx, jdbcClient: JDBCClient) {
-        logger.info("Starting WebService at Port: $httpPort with SSL=$useSSL")
-
-        this.isServiceRunning = true;
+        logger.info("Starting WebService...")
         val router = Router.router(sharedVertx)
-
         serviceList.forEach {
             serviceImpl ->
             var prefix = ""
@@ -62,18 +62,34 @@ object WebService {
                 router.mountSubRouter("/" + prefix, subRouter)
             }
         }
-
         router.route().handler {
             ctx ->
             ctx.response().end("You should not land here.. Whoops!")
         }
-
-        val sslServer = sharedVertx.createHttpServer(HttpServerOptions()
+        server = sharedVertx.createHttpServer(HttpServerOptions()
                 .setSsl(useSSL)
                 .setKeyStoreOptions(JksOptions()
                         .setPath(sslKeyStore)
                         .setPassword(sslPassword))
         )
-        sslServer.requestHandler({ router.accept(it) }).listen(httpPort)
+        server!!.requestHandler{ context ->
+            router.accept(context)
+        }.listen(httpPort, {
+            handler ->
+            this.isServiceRunning = true;
+            logger.info("WebService started at Port: $httpPort, SSL=$useSSL")
+        })
+    }
+
+    fun shutdown(){
+        if(server != null && isServiceRunning){
+            server!!.close{ res ->
+                if(res.succeeded()){
+                    logger.info("HttpWebServer Shutdown")
+                }else{
+                    logger.error("Failed to shutdown WebServer",res.cause())
+                }
+            }
+        }
     }
 }
