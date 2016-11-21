@@ -14,6 +14,10 @@ class PermissionMap {
         return ArrayList(permissions.values)
     }
 
+    fun hasPermission(permission: Permission):Boolean{
+        return permissions.containsValue(permission)
+    }
+
     override fun toString(): String {
         val rootArray = JsonArray()
         permissions.values.forEach { permission ->

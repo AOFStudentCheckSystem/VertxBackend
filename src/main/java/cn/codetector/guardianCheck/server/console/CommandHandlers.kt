@@ -3,6 +3,7 @@ package cn.codetector.guardianCheck.server.console
 import cn.codetector.guardianCheck.server.Main
 import cn.codetector.guardianCheck.server.console.consoleManager.Command
 import cn.codetector.guardianCheck.server.console.consoleManager.ConsoleManager
+import cn.codetector.guardianCheck.server.data.DataService
 import cn.codetector.guardianCheck.server.webService.WebService
 
 /**
@@ -42,6 +43,23 @@ object CommandHandlers {
             }
         }
         println("Available actions: (status)")
+        return false
+    }
+
+    @Command(command = "db")
+    fun dbCommandHandler(args: Array<String>):Boolean{
+        if(args.size > 1){
+            when(args[1]){
+                "save" -> {
+                    DataService.save()
+                    return true
+                }
+                "reload" -> {
+                    DataService.reload()
+                    return true
+                }
+            }
+        }
         return false
     }
 

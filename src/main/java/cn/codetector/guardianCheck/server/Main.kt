@@ -1,6 +1,7 @@
 package cn.codetector.guardianCheck.server
 
 import cn.codetector.guardianCheck.server.console.consoleManager.ConsoleManager
+import cn.codetector.guardianCheck.server.data.DataService
 import cn.codetector.guardianCheck.server.data.database.SharedDBConfig
 import cn.codetector.guardianCheck.server.data.permission.PermissionManager
 import cn.codetector.guardianCheck.server.webService.WebService
@@ -21,7 +22,7 @@ object Main{
 
     fun initService(){
         try {
-            PermissionManager.setDBClient(Main.sharedJDBCClient)//Init Permission System Before anything else
+            DataService.start()
             WebService.initService(Main.sharedVertx, Main.sharedJDBCClient) //Init Web API Services
         } catch (t: Throwable) {
             Main.rootLogger.error(t)
@@ -35,11 +36,19 @@ object Main{
         Main.rootLogger.info("Shutting down Server")
         ConsoleManager.stop()
         WebService.shutdown()
-        Main.sharedVertx.close({ res ->
-            if (res.succeeded()) {
-                Main.rootLogger.info("Vert.X Shutdown")
-            }
-        })
+        DataService.terminate()
+        DataService.save {
+            //TODO move database shutdown into Dataservice
+            Main.rootLogger.info("Disconnecting from Database")
+            Main.sharedJDBCClient.close()
+            Main.rootLogger.info("All Database connection shutdown")
+            Main.sharedVertx.close({ res ->
+                if (res.succeeded()) {
+                    Main.rootLogger.info("Vert.X Shutdown")
+                }
+            })
+        }
+
     }
 }
 

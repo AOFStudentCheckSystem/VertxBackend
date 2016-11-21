@@ -1,20 +1,39 @@
 package cn.codetector.guardianCheck.server.data.permission
 
+import com.sun.org.apache.xpath.internal.operations.Bool
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 
-class Role (val id:Int, val name:String){
+class Role (val name:String){
     val permissions: PermissionMap = PermissionMap()
 
-    constructor(jsonObject: JsonObject):this(jsonObject.getInteger("id"),jsonObject.getString("magic")){
+    constructor(jsonObject: JsonObject):this(jsonObject.getString("name")){
 
     }
 
-    fun addPermission(permission: String){
+    fun addPermission(permission: Permission){
+        permissions.addPermission(permission)
+    }
 
+    fun hasPermission(permission: Permission) : Boolean{
+        return permissions.hasPermission(permission)
+    }
+
+    @Deprecated(message = "Please get permission Object from PermissionManager", replaceWith = ReplaceWith("hasPermission(PermissionManager.getPermissionByName(permission))"), level = DeprecationLevel.HIDDEN)
+    fun hasPermission(permission: String): Boolean{
+        return hasPermission(PermissionManager.getPermissionByName(permission))
     }
 
     fun allPermissions():List<Permission>{
         return permissions.allPermissions()
+    }
+
+    fun getPermissionJson():JsonObject{
+        val perms = JsonArray()
+        permissions.permissions.values.forEach {
+            p ->
+            perms.add(p.name)
+        }
+        return JsonObject().put("permissions",perms)
     }
 }
