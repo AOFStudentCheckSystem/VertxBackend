@@ -1,27 +1,21 @@
 package cn.codetector.guardianCheck.server.data.permission
 
+import cn.codetector.guardianCheck.server.data.AbstractDataService
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.core.logging.LoggerFactory
-import io.vertx.ext.jdbc.JDBCClient
 import java.util.*
 
 /**
  * Created by codetector on 19/11/2016.
  */
-object PermissionManager {
+object PermissionManager : AbstractDataService() {
     private val logger = LoggerFactory.getLogger(this.javaClass)
 
-    private var dbClient: JDBCClient? = null
     private val serverPermissions = PermissionMap()
     private val serverRoles = HashMap<String, Role>()
 
-    fun isInitialized(): Boolean {
-        return this.dbClient != null
-    }
-
-    fun setDBClient(dbClient: JDBCClient) {
-        this.dbClient = dbClient
+    override fun initialize() {
         logger.info("Permission Manager Initialized")
     }
 
@@ -33,14 +27,6 @@ object PermissionManager {
         }
     }
 
-    fun getRoleByName(name: String): Role {
-        if (serverRoles.contains(name)) {
-            return serverRoles.get(name)!!
-        } else {
-            throw IllegalArgumentException("No Role named '$name' Found")
-        }
-    }
-
     private fun getPermissionWithName(name: String): Permission {
         if (serverPermissions.permissions.contains(name)) {
             return serverPermissions.permissions.get(name)!!
@@ -49,6 +35,14 @@ object PermissionManager {
             logger.trace("Permission created on use : $perm")
             serverPermissions.addPermission(perm)
             return perm
+        }
+    }
+
+    fun getRoleByName(name: String): Role {
+        if (serverRoles.contains(name)) {
+            return serverRoles.get(name)!!
+        } else {
+            throw IllegalArgumentException("No Role named '$name' Found")
         }
     }
 
@@ -98,7 +92,7 @@ object PermissionManager {
                             if (result == 1) new++ else unChange++
                         }
                         logger.trace("Role save complete, New: $new, Unchanged: $unChange")
-                    }else{
+                    } else {
                         logger.error("Failed to save Role table", handler.cause())
                     }
                     action.invoke()
@@ -110,7 +104,7 @@ object PermissionManager {
         }
     }
 
-    fun saveToDatabase(action: () -> Unit) {
+    override fun saveToDatabase(action: () -> Unit) {
         savePermissionTable {
             saveRolesTable {
                 action.invoke()
@@ -118,11 +112,7 @@ object PermissionManager {
         }
     }
 
-    fun loadFromDatabase(){
-        loadFromDatabase{}
-    }
-
-    fun loadFromDatabase(action: () -> Unit) {
+    override fun loadFromDatabase(action: () -> Unit) {
         this.loadPermissionsFromDatabase {
             this.loadRolesFromDatabase {
                 action.invoke()
@@ -164,11 +154,11 @@ object PermissionManager {
                         query.result().rows.forEach { roleR ->
                             var role = Role(roleR.getString("name"))
                             JsonObject(roleR.getString("permissions")).getJsonArray("permissions").forEach { permission ->
-                                if (permission is String){
+                                if (permission is String) {
                                     role.addPermission(PermissionManager.getPermissionWithName(permission))
                                 }
                             }
-                            serverRoles.put(role.name,role)
+                            serverRoles.put(role.name, role)
                         }
                     }
                     val rolesCount = serverRoles.size
