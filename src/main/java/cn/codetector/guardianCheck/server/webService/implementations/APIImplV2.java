@@ -345,7 +345,7 @@ public class APIImplV2 implements IWebAPIImpl {
                                                                 }
                                                             });
                                                         } else {
-                                                            logger.error("Failed to execute sql query - UUID Key Assignment" ,handler11.cause());
+                                                            logger.error("Failed to execute sql query - UUID Key Assignment", handler11.cause());
                                                             ctx.fail(500);
                                                             conn.result().close();
                                                         }
@@ -389,25 +389,25 @@ public class APIImplV2 implements IWebAPIImpl {
                 if (v.result()) {
                     dbClient.getConnection(con -> {
                         if (con.succeeded()) {
-                            con.result().queryWithParams("SELECT * FROM dummyofflineauth WHERE `authkey` = ?",new JsonArray().add(authKey),result-> {
-                                if (result.succeeded() && result.result().getNumRows() == 1){
-                                    if (result.result().getRows().get(0).getString("eventId").equalsIgnoreCase(eventId)){
-                                        con.result().updateWithParams("UPDATE `dummyevent` SET `eventStatus` = 1 WHERE `eventId` = ?",new JsonArray().add(eventId), res -> {
+                            con.result().queryWithParams("SELECT * FROM dummyofflineauth WHERE `authkey` = ?", new JsonArray().add(authKey), result -> {
+                                if (result.succeeded() && result.result().getNumRows() == 1) {
+                                    if (result.result().getRows().get(0).getString("eventId").equalsIgnoreCase(eventId)) {
+                                        con.result().updateWithParams("UPDATE `dummyevent` SET `eventStatus` = 1 WHERE `eventId` = ?", new JsonArray().add(eventId), res -> {
                                             if (result.succeeded()) {
                                                 con.result().updateWithParams("DELETE FROM `dummyofflineauth` WHERE `eventId` = ?", new JsonArray().add(eventId), r -> {
                                                     ctx.response().end();
                                                     con.result().close();
                                                 });
-                                            }else{
+                                            } else {
                                                 ctx.fail(500);
                                                 con.result().close();
                                             }
                                         });
-                                    }else{
+                                    } else {
                                         con.result().close();
                                         ctx.fail(401);
                                     }
-                                }else{
+                                } else {
                                     con.result().close();
                                     ctx.fail(result.cause());
                                 }

@@ -1,11 +1,7 @@
 package cn.codetector.guardianCheck.server.webService
 
-import cn.codetector.guardianCheck.server.Main
 import cn.codetector.util.Configuration.Configuration
 import cn.codetector.util.Configuration.ConfigurationManager
-import com.sun.org.apache.xpath.internal.operations.Bool
-import io.vertx.core.AsyncResult
-import io.vertx.core.Handler
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpServer
 import io.vertx.core.http.HttpServerOptions
@@ -31,7 +27,7 @@ object WebService {
 
     private val serviceList: MutableList<IWebAPIImpl> = ArrayList<IWebAPIImpl>()
 
-    private var server:HttpServer? = null
+    private var server: HttpServer? = null
 
     init {
         registerProviders()
@@ -85,15 +81,15 @@ object WebService {
                 this.isServiceRunning = true;
                 logger.info("WebService started at Port: $httpPort, SSL=$useSSL")
             })
-        }else{
+        } else {
             logger.warn("Failed to start service : Service already running")
         }
     }
 
-    fun shutdown(){
-        if(server != null && isServiceRunning){
+    fun shutdown() {
+        if (server != null && isServiceRunning) {
             logger.info("Shutting down Web Service ...")
-            server!!.close{h->
+            server!!.close { h ->
                 this.isServiceRunning = false
                 logger.info("Web Service Shutdown")
             }

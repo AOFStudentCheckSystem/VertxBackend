@@ -1,6 +1,5 @@
 package cn.codetector.guardianCheck.server.data
 
-import cn.codetector.guardianCheck.server.data.permission.PermissionManager
 import io.vertx.ext.jdbc.JDBCClient
 
 /**
@@ -21,12 +20,12 @@ abstract class AbstractDataService {
     abstract fun initialize()
 
     abstract fun saveToDatabase(action: () -> Unit)
-    fun saveToDatabase(){
-        saveToDatabase{}
+    fun saveToDatabase() {
+        saveToDatabase {}
     }
 
     abstract fun loadFromDatabase(action: () -> Unit)
-    fun loadFromDatabase(){
-        loadFromDatabase{}
+    fun loadFromDatabase() {
+        loadFromDatabase {}
     }
 }

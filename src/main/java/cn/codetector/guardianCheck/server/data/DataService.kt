@@ -1,7 +1,6 @@
 package cn.codetector.guardianCheck.server.data
 
 import cn.codetector.guardianCheck.server.Main
-import cn.codetector.guardianCheck.server.data.permission.Permission
 import cn.codetector.guardianCheck.server.data.permission.PermissionManager
 import cn.codetector.guardianCheck.server.data.user.UserManager
 import io.vertx.core.logging.LoggerFactory
@@ -14,20 +13,20 @@ import java.util.concurrent.TimeUnit
  */
 object DataService {
     val logger = LoggerFactory.getLogger(this.javaClass)
-    val executors:ExecutorService = Executors.newSingleThreadExecutor()
+    val executors: ExecutorService = Executors.newSingleThreadExecutor()
 
-    fun start(){
+    fun start() {
         logger.info("Starting DataService")
         PermissionManager.setDBClient(Main.sharedJDBCClient)
         UserManager.setDBClient(Main.sharedJDBCClient)
         load()
     }
 
-    fun save(){
+    fun save() {
         save {}
     }
 
-    fun save(action: () -> Unit){
+    fun save(action: () -> Unit) {
         PermissionManager.saveToDatabase {
             UserManager.saveToDatabase {
                 action.invoke()
@@ -35,12 +34,12 @@ object DataService {
         }
     }
 
-    fun terminate(){
-        executors.awaitTermination(3,TimeUnit.SECONDS)
+    fun terminate() {
+        executors.awaitTermination(3, TimeUnit.SECONDS)
         executors.shutdown()
     }
 
-    fun isTerminated():Boolean{
+    fun isTerminated(): Boolean {
         return executors.isTerminated
     }
 
@@ -48,8 +47,8 @@ object DataService {
         load()
     }
 
-    fun load(){
-        PermissionManager.loadFromDatabase{
+    fun load() {
+        PermissionManager.loadFromDatabase {
             UserManager.loadFromDatabase {
                 logger.info("Data Service Loaded")
             }

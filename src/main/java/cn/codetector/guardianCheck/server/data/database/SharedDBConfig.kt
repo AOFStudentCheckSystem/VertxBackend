@@ -26,11 +26,11 @@ object SharedDBConfig {
         dbPrefix = dbConfig.getStringValue("db_prefix", "dummy")
     }
 
-    fun getDBConnectionURLWithSettings():String{
+    fun getDBConnectionURLWithSettings(): String {
         return "$db_url$db_name?useSSL=$db_ssl&characterEncoding=$db_charset"
     }
 
-    fun getVertXJDBCConfigObject() :JsonObject{
+    fun getVertXJDBCConfigObject(): JsonObject {
         val jsonObject = JsonObject()
         jsonObject.put("driver_class", driver_class)
         jsonObject.put("user", user)

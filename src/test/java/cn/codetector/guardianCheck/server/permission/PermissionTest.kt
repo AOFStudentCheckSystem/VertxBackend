@@ -8,20 +8,20 @@ import java.util.*
 class PermissionTest : TestCase() {
     fun testToString() {
         val testStr = UUID.randomUUID().toString()
-        val per = Permission(testStr,"testDesc")
-        Assert.assertEquals(testStr,per.toString())
+        val per = Permission(testStr, "testDesc")
+        Assert.assertEquals(testStr, per.toString())
     }
 
     fun testGetName() {
         val testStr = UUID.randomUUID().toString()
-        val per = Permission(testStr,"testDesc")
-        Assert.assertEquals(testStr,per.name)
+        val per = Permission(testStr, "testDesc")
+        Assert.assertEquals(testStr, per.name)
     }
 
     fun testGetDescription() {
         val testStr = UUID.randomUUID().toString()
-        val per = Permission("Test",testStr)
-        Assert.assertEquals(testStr,per.description)
+        val per = Permission("Test", testStr)
+        Assert.assertEquals(testStr, per.description)
     }
 
 }

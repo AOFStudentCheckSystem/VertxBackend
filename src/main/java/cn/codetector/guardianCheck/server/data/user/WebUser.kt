@@ -9,15 +9,16 @@ import io.vertx.ext.auth.AuthProvider
 /**
  * Created by codetector on 21/11/2016.
  */
-class WebUser (val user:User): io.vertx.ext.auth.User{
+class WebUser(val user: User) : io.vertx.ext.auth.User {
     var lastActive = System.currentTimeMillis()
         private set
+
     override fun isAuthorised(authority: String?, resultHandler: Handler<AsyncResult<Boolean>>?): io.vertx.ext.auth.User {
         resultHandler!!.handle(Future.succeededFuture(user.hasPermission(authority!!)))
         return this
     }
 
-    fun renewTime(){
+    fun renewTime() {
         this.lastActive = System.currentTimeMillis()
     }
 
@@ -30,10 +31,10 @@ class WebUser (val user:User): io.vertx.ext.auth.User{
     }
 
     override fun principal(): JsonObject {
-        return JsonObject().put("username",this.user.username)
+        return JsonObject().put("username", this.user.username)
     }
 
-    fun lastActiveInRange(timeRange: Long):Boolean{
+    fun lastActiveInRange(timeRange: Long): Boolean {
         return (Math.abs(System.currentTimeMillis() - lastActive) < timeRange)
     }
 }

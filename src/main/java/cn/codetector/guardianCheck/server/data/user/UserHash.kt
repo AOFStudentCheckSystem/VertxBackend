@@ -4,7 +4,7 @@ import io.vertx.core.logging.LoggerFactory
 import java.util.*
 
 object UserHash {
-    val DEFAULT_TIMEOUT:Long = 1000 //* 60 * 30
+    val DEFAULT_TIMEOUT: Long = 1000 //* 60 * 30
     private val logger = LoggerFactory.getLogger(this.javaClass)
     private val allUsers: MutableMap<String, WebUser> = HashMap()
 

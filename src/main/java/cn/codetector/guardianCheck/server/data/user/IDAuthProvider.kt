@@ -10,17 +10,17 @@ import io.vertx.ext.auth.User
 /**
  * Created by codetector on 21/11/2016.
  */
-class IDAuthProvider : AuthProvider{
+class IDAuthProvider : AuthProvider {
     val timeout = 1000 * 60 * 30
 
     override fun authenticate(authInfo: JsonObject?, resultHandler: Handler<AsyncResult<User>>?) {
-        if (authInfo!!.containsKey("auth")){
-            if (UserHash.isAuthKeyValid(authInfo.getString("auth"))){
+        if (authInfo!!.containsKey("auth")) {
+            if (UserHash.isAuthKeyValid(authInfo.getString("auth"))) {
                 resultHandler!!.handle(Future.succeededFuture(UserHash.getUserByAuthKey(authInfo.getString("auth"))))
-            }else{
+            } else {
                 resultHandler!!.handle(Future.failedFuture("Invalid Token"))
             }
-        }else{
+        } else {
             resultHandler!!.handle(Future.failedFuture("Malformed authInfo"))
         }
     }

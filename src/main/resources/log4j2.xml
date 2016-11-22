@@ -10,7 +10,8 @@
                 <OnStartupTriggeringPolicy/>
             </Policies>
         </RollingRandomAccessFile>
-        <RollingRandomAccessFile name="ServicesLog" fileName="logs/services/latest.log" filePattern="logs/services/%d{yyyy-MM-dd}-%i.log.gz">
+        <RollingRandomAccessFile name="ServicesLog" fileName="logs/services/latest.log"
+                                 filePattern="logs/services/%d{yyyy-MM-dd}-%i.log.gz">
             <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level] [%logger{1}]: %msg%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy/>

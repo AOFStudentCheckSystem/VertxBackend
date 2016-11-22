@@ -5,6 +5,21 @@ import java.util.ArrayList;
 
 class EmoticonManager {
 
+    private static ArrayList<String> ems = new ArrayList<>();
+
+    static {
+        //general
+        try (BufferedReader br = new BufferedReader(new FileReader(new File(ExportResource("/emoticon.list"))))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                ems.add(line);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
     private static String ExportResource(String resourceName) throws Exception {
         InputStream stream = null;
         OutputStream resStreamOut = null;
@@ -31,21 +46,6 @@ class EmoticonManager {
                 resStreamOut.close();
         }
         return jarFolder + resourceName;
-    }
-
-    private static ArrayList<String> ems = new ArrayList<>();
-
-    static {
-        //general
-        try (BufferedReader br = new BufferedReader(new FileReader(new File(ExportResource("/emoticon.list"))))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                ems.add(line);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
     }
 
     public static String get() {
