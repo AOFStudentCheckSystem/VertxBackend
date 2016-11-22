@@ -7,10 +7,6 @@ import io.vertx.core.json.JsonObject
 class Role (val name:String){
     val permissions: PermissionMap = PermissionMap()
 
-    constructor(jsonObject: JsonObject):this(jsonObject.getString("name")){
-
-    }
-
     fun addPermission(permission: Permission){
         permissions.addPermission(permission)
     }

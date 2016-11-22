@@ -4,6 +4,7 @@ import cn.codetector.guardianCheck.server.Main
 import cn.codetector.guardianCheck.server.console.consoleManager.Command
 import cn.codetector.guardianCheck.server.console.consoleManager.ConsoleManager
 import cn.codetector.guardianCheck.server.data.DataService
+import cn.codetector.guardianCheck.server.data.user.UserHash
 import cn.codetector.guardianCheck.server.webService.WebService
 
 /**
@@ -56,6 +57,25 @@ object CommandHandlers {
                 }
                 "reload" -> {
                     DataService.reload()
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    @Command(command = "user")
+    fun userCommandHandler (args: Array<String>):Boolean{
+        if (args.size > 1){
+            when(args[1]){
+                "count" -> {
+                    val cnt = UserHash.totalUserCache()
+                    println("Current Logged in: $cnt")
+                    return true
+                }
+
+                "reload" -> {
+                    UserHash.removeTimedOutUsers(UserHash.DEFAULT_TIMEOUT)
                     return true
                 }
             }

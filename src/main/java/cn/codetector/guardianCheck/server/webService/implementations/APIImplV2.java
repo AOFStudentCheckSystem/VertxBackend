@@ -43,7 +43,7 @@ public class APIImplV2 implements IWebAPIImpl {
         JWTAuthHandler authHandler = JWTAuthHandler.create(jwtAuth, "/v2/api/auth");
         router.options("/api/*").handler(ctx -> {
             ctx.response().putHeader("Access-Control-Allow-Origin", "*");
-            ctx.response().putHeader("Access-Control-Allow-Methods", "GET, POST OPTIONS");
+            ctx.response().putHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
             ctx.response().putHeader("Access-Control-Allow-Headers", "Authorization");
             ctx.response().end();
         });
@@ -228,7 +228,7 @@ public class APIImplV2 implements IWebAPIImpl {
                 if (v.result()) {
                     dbClient.getConnection(conn -> {
                         if (conn.succeeded()) {
-                            conn.result().query("SELECT `eventId`, `eventName`, UNIX_TIMESTAMP(`eventTime`) as `eventTime`, `eventStatus` FROM `dummyevent` ORDER BY `eventTime` DESC", res -> {
+                            conn.result().query("SELECT `eventId`, `eventName`, UNIX_TIMESTAMP(`eventTime`) as `eventTime`, `eventStatus` FROM `dummyevent` WHERE `eventStatus` >= 0 ORDER BY `eventTime` DESC", res -> {
                                 if (res.succeeded()) {
                                     ctx.response().end(new JsonObject().put("events", res.result().getRows()).toString());
                                 } else {
@@ -322,9 +322,8 @@ public class APIImplV2 implements IWebAPIImpl {
         router.post("/api/event/:eventId/checkout").handler(ctx -> {
             Logger logger = LoggerFactory.getLogger("apiv2.handler.event.checkout");
             String eventId = ctx.pathParam("eventId");
-
             ctx.user().isAuthorised("checkoutEvent", a -> {
-                if (a.succeeded()) {
+                if (a.result()) {
                     dbClient.getConnection(conn -> {
                         if (conn.succeeded()) {
                             conn.result().queryWithParams("SELECT * FROM `dummyevent` WHERE `eventId` = ?", new JsonArray().add(eventId), handler -> {
@@ -334,25 +333,25 @@ public class APIImplV2 implements IWebAPIImpl {
                                             conn.result().updateWithParams("UPDATE `dummyevent` SET `eventStatus` = -1 WHERE `eventId` = ?", new JsonArray().add(eventId), handler1 -> {
                                                 if (handler1.succeeded()) {
                                                     String accessKey = UUID.randomUUID().toString();
-                                                    conn.result().updateWithParams("INSERT INTO `dummyofflineauth (`eventId`, `authkey`) VALUES (?,?)",new JsonArray().add(eventId).add(accessKey), handler11 -> {
+                                                    conn.result().updateWithParams("INSERT INTO `dummyofflineauth` (`eventId`, `authkey`) VALUES (?,?) ON DUPLICATE KEY UPDATE `authkey`=VALUES(`authkey`)", new JsonArray().add(eventId).add(accessKey), handler11 -> {
                                                         if (handler11.succeeded()) {
                                                             conn.result().queryWithParams("SELECT `studentID` as `studentId` ,`checkinTime`, NULL as `checkoutTime` FROM `dummycheck` WHERE `event` = ?", new JsonArray().add(eventId), handler2 -> {
                                                                 if (handler2.succeeded()) {
-                                                                    ctx.response().end(new JsonObject().put("returnKey",accessKey).put("students",handler2.result().getRows()).toString());
+                                                                    ctx.response().end(new JsonObject().put("returnKey", accessKey).put("students", handler2.result().getRows()).toString());
                                                                 } else {
-                                                                    logger.error("Failed to execute sql query", handler.cause());
+                                                                    logger.error("Failed to execute sql query", handler2.cause());
                                                                     ctx.fail(500);
                                                                     conn.result().close();
                                                                 }
                                                             });
                                                         } else {
-                                                            logger.error("Failed to execute sql query - UUID Key Assignment", handler.cause());
+                                                            logger.error("Failed to execute sql query - UUID Key Assignment" ,handler11.cause());
                                                             ctx.fail(500);
                                                             conn.result().close();
                                                         }
                                                     });
                                                 } else {
-                                                    logger.error("Failed to execute sql query", handler.cause());
+                                                    logger.error("Failed to execute sql query", handler1.cause());
                                                     ctx.fail(500);
                                                     conn.result().close();
                                                 }
@@ -375,6 +374,45 @@ public class APIImplV2 implements IWebAPIImpl {
                             });
                         } else {
                             logger.error("Failed to obtain db connection", conn.cause());
+                            ctx.fail(500);
+                        }
+                    });
+                } else {
+                    ctx.fail(401);
+                }
+            });
+        });
+        router.post("/api/event/:eventId/return").handler(ctx -> {
+            String eventId = ctx.pathParam("eventId");
+            String authKey = ctx.request().getFormAttribute("authKey");
+            ctx.user().isAuthorised("updateEvent", v -> {
+                if (v.result()) {
+                    dbClient.getConnection(con -> {
+                        if (con.succeeded()) {
+                            con.result().queryWithParams("SELECT * FROM dummyofflineauth WHERE `authkey` = ?",new JsonArray().add(authKey),result-> {
+                                if (result.succeeded() && result.result().getNumRows() == 1){
+                                    if (result.result().getRows().get(0).getString("eventId").equalsIgnoreCase(eventId)){
+                                        con.result().updateWithParams("UPDATE `dummyevent` SET `eventStatus` = 1 WHERE `eventId` = ?",new JsonArray().add(eventId), res -> {
+                                            if (result.succeeded()) {
+                                                con.result().updateWithParams("DELETE FROM `dummyofflineauth` WHERE `eventId` = ?", new JsonArray().add(eventId), r -> {
+                                                    ctx.response().end();
+                                                    con.result().close();
+                                                });
+                                            }else{
+                                                ctx.fail(500);
+                                                con.result().close();
+                                            }
+                                        });
+                                    }else{
+                                        con.result().close();
+                                        ctx.fail(401);
+                                    }
+                                }else{
+                                    con.result().close();
+                                    ctx.fail(result.cause());
+                                }
+                            });
+                        } else {
                             ctx.fail(500);
                         }
                     });
@@ -661,7 +699,7 @@ public class APIImplV2 implements IWebAPIImpl {
                         conn.result().queryWithParams("SELECT `eventStatus` FROM `dummyevent` WHERE `eventId`=?", new JsonArray().add(eventId), res -> {
                             if (res.succeeded() && res.result().getNumRows() > 0) {
                                 int eventStatus = res.result().getRows().get(0).getInteger("eventStatus");
-                                if (eventStatus < 2) {
+                                if (eventStatus < 2 && eventStatus >= 0) {
                                     if (eventStatus < 1) {
                                         dbClient.getConnection(co -> {
                                             if (co.succeeded()) {

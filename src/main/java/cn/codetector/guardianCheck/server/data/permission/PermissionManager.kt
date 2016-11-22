@@ -63,7 +63,7 @@ object PermissionManager : AbstractDataService() {
                         handler.result().forEachIndexed { i, result ->
                             if (result == 1) success++ else fail++
                         }
-                        logger.trace("Permission save complete, Success: $success, Fail: $fail")
+                        logger.trace("Permissions save complete, Success: $success, Fail: $fail")
                     }
                     action.invoke()
                 })
@@ -83,15 +83,15 @@ object PermissionManager : AbstractDataService() {
                 serverRoles.values.forEach { role ->
                     roles.add(JsonArray().add(role.name).add(role.getPermissionJson().toString()))
                 }
-                conn.result().batchWithParams("INSERT IGNORE INTO `dummyroles` (`name`, `permissions`) VALUES (? ,? )", roles, {
+                conn.result().batchWithParams("INSERT INTO `dummyroles` (`name`,`permissions`) VALUES (?,?) ON DUPLICATE KEY UPDATE `permissions` = VALUES(`permissions`)", roles, {
                     handler ->
                     if (handler.succeeded()) {
-                        var new = 0
-                        var unChange = 0
+                        var success = 0
+                        var fail = 0
                         handler.result().forEachIndexed { i, result ->
-                            if (result == 1) new++ else unChange++
+                            if (result == 1) success++ else fail++
                         }
-                        logger.trace("Role save complete, New: $new, Unchanged: $unChange")
+                        logger.trace("Roles save complete, Success: $success, Fail: $fail")
                     } else {
                         logger.error("Failed to save Role table", handler.cause())
                     }
@@ -151,6 +151,7 @@ object PermissionManager : AbstractDataService() {
                 conn.result().query("SELECT * FROM `dummyroles`", {
                     query ->
                     if (query.succeeded()) {
+                        serverRoles.clear()
                         query.result().rows.forEach { roleR ->
                             var role = Role(roleR.getString("name"))
                             JsonObject(roleR.getString("permissions")).getJsonArray("permissions").forEach { permission ->
