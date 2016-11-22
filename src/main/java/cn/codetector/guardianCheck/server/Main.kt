@@ -3,6 +3,7 @@ package cn.codetector.guardianCheck.server
 import cn.codetector.guardianCheck.server.console.consoleManager.ConsoleManager
 import cn.codetector.guardianCheck.server.data.DataService
 import cn.codetector.guardianCheck.server.data.database.SharedDBConfig
+import cn.codetector.guardianCheck.server.data.user.UserHash
 import cn.codetector.guardianCheck.server.webService.WebService
 import cn.codetector.util.Configuration.ConfigurationManager
 import io.vertx.core.Vertx
@@ -30,11 +31,16 @@ object Main {
         ConsoleManager.monitorStream("ConsoleIn", System.`in`)
     }
 
+    fun save(){
+        UserHash.save()
+        DataService.save()
+    }
 
     fun stopService() {
         Main.rootLogger.info("Shutting down Server")
         ConsoleManager.stop()
         WebService.shutdown()
+        UserHash.save()
         DataService.terminate()
         DataService.save {
             //TODO move database shutdown into Dataservice

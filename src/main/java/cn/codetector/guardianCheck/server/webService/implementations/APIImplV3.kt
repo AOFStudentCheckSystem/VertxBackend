@@ -72,6 +72,8 @@ class APIImplV3 : IWebAPIImpl {
             }
         }
 
-//        router.
+        router.post("/api/test").handler { ctx ->
+            ctx.response().end(ctx.user().principal().toString())
+        }
     }
 }

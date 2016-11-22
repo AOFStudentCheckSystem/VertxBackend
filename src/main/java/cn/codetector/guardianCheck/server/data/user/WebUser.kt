@@ -13,6 +13,10 @@ class WebUser(val user: User) : io.vertx.ext.auth.User {
     var lastActive = System.currentTimeMillis()
         private set
 
+    constructor(user: User, lastActive:Long) : this(user){
+        this.lastActive = lastActive
+    }
+
     override fun isAuthorised(authority: String?, resultHandler: Handler<AsyncResult<Boolean>>?): io.vertx.ext.auth.User {
         resultHandler!!.handle(Future.succeededFuture(user.hasPermission(authority!!)))
         return this

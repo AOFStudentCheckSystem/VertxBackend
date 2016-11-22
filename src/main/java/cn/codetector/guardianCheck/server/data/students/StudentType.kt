@@ -5,14 +5,15 @@ package cn.codetector.guardianCheck.server.data.students
  */
 enum class StudentType(val value: Int) {
     Day(2),
-    Boarding(1);
+    Boarding(1),
+    Unknown(0);
 
     override fun toString(): String {
         return when(value){
             Day.value -> "Day"
             Boarding.value -> "Boarding"
             else -> {
-                "Unknown Value"
+                "Unknown"
             }
         }
     }}

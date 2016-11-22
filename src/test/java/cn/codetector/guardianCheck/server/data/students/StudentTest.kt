@@ -11,9 +11,8 @@ internal class StudentTest {
     fun equals() {
         val standardStu = Student("firstName","lastName","nickName","123456","rfid",StudentType.Day,"DORM")
         val standardStuExactCopy = Student("firstName","lastName","nickName","123456","rfid",StudentType.Day,"DORM")
-        val standartSameStudentID = Student(firstName = "", lastName = "", nickName = "", studentId = "123456", rfid = "", studentType = StudentType.Day, dorm = "")
+        val standardSameStudentID = Student(firstName = "", lastName = "", nickName = "", studentId = "123456", rfid = "", studentType = StudentType.Day, dorm = "")
         assertTrue(standardStu == standardStuExactCopy)
-        assertTrue(standardStu == standartSameStudentID)
+        assertTrue(standardStu == standardSameStudentID)
     }
-
 }

@@ -40,6 +40,10 @@ object CommandHandlers {
                     Main.stopService()
                     return true
                 }
+                "save" -> {
+                    Main.save()
+                    return true
+                }
             }
         }
         println("Available actions: (status)")

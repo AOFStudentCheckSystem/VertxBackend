@@ -1,27 +1,29 @@
 package cn.codetector.guardianCheck.server.permission
 
 import cn.codetector.guardianCheck.server.data.permission.Permission
-import junit.framework.Assert
-import junit.framework.TestCase
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 import java.util.*
 
-class PermissionTest : TestCase() {
+
+class PermissionTest{
+    @Test
     fun testToString() {
         val testStr = UUID.randomUUID().toString()
         val per = Permission(testStr, "testDesc")
-        Assert.assertEquals(testStr, per.toString())
+        assertEquals(testStr, per.toString())
     }
-
+    @Test
     fun testGetName() {
         val testStr = UUID.randomUUID().toString()
         val per = Permission(testStr, "testDesc")
-        Assert.assertEquals(testStr, per.name)
+        assertEquals(testStr, per.name)
     }
-
+    @Test
     fun testGetDescription() {
         val testStr = UUID.randomUUID().toString()
         val per = Permission("Test", testStr)
-        Assert.assertEquals(testStr, per.description)
+        assertEquals(testStr, per.description)
     }
 
 }
