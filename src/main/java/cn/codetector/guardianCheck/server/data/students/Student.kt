@@ -1,7 +1,9 @@
 package cn.codetector.guardianCheck.server.data.students
 
-data class Student(val firstName: String, val lastName: String, val nickName: String, val studentId: String, val rfid: String, val studentType: StudentType, val dorm: String) {
-    constructor(studentId: String):this("","","",studentId,"",StudentType.Unknown,"")
+import io.vertx.core.json.JsonObject
+
+data class Student(var firstName: String, var lastName: String, var nickName: String, val studentId: String, var rfid: String, var studentType: StudentType, var dorm: String, var grade:String) {
+    constructor(studentId: String):this("","","",studentId,"",StudentType.Unknown,"","")
     val fullName: String
         get() {
             return "$lastName $firstName"
@@ -24,5 +26,11 @@ data class Student(val firstName: String, val lastName: String, val nickName: St
         result = 31 * result + studentType.hashCode()
         result = 31 * result + dorm.hashCode()
         return result
+    }
+
+    fun toJsonString():String{
+        return JsonObject().put("firstName",firstName).put("lastName",lastName).put("nickName",nickName).put("studentId",studentId).
+                put("rfid",rfid).put("type",studentType.value).put("typeDescription",studentType.toString()).put("dorm",dorm).
+                put("grade",grade).toString()
     }
 }

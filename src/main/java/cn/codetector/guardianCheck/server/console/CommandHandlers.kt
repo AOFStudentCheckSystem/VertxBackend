@@ -76,7 +76,10 @@ object CommandHandlers {
                     println("Current Logged in: $cnt")
                     return true
                 }
-
+                "save" -> {
+                    UserHash.save()
+                    return true
+                }
                 "reload" -> {
                     UserHash.removeTimedOutUsers(UserHash.DEFAULT_TIMEOUT)
                     return true

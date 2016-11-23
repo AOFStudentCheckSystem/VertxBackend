@@ -1,14 +1,23 @@
 package cn.codetector.guardianCheck.server.webService.implementations
 
+import cn.codetector.guardianCheck.server.data.permission.PermissionManager
+import cn.codetector.guardianCheck.server.data.students.StudentManager
 import cn.codetector.guardianCheck.server.data.user.UserHash
 import cn.codetector.guardianCheck.server.data.user.UserManager
 import cn.codetector.guardianCheck.server.webService.IWebAPIImpl
 import cn.codetector.guardianCheck.server.webService.WebAPIImpl
+import cn.codetector.util.Validator.MD5
+import com.google.common.io.ByteStreams
 import io.vertx.core.Vertx
+import io.vertx.core.buffer.Buffer
+import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.core.logging.LoggerFactory
 import io.vertx.ext.jdbc.JDBCClient
 import io.vertx.ext.web.Router
+import java.io.File
+import java.io.FileInputStream
+import java.io.IOException
 
 /**
  * Created by codetector on 21/11/2016.
@@ -72,8 +81,60 @@ class APIImplV3 : IWebAPIImpl {
             }
         }
 
+        //Student Handlers
+        //All Student handler
+        router.get("/api/student/all").handler { ctx ->
+            ctx.user().isAuthorised("readStudent", { auth ->
+                if (auth.result()){
+                    ctx.response().end(JsonObject().put("students",JsonArray(StudentManager.allStudentsAsJsonArray())).toString())
+                }else{
+                    ctx.fail(401)
+                }
+            })
+        }
+        router.post("/api/student/:stuId/update").handler { ctx ->
+            ctx.user().isAuthorised("updateStudent", { auth ->
+                if (auth.result()){
+                    val stuId = ctx.pathParam("stuId")
+                    val rfid = ctx.request().getFormAttribute("RFID")
+                    val student = StudentManager.findStudentById(stuId)
+                    if (student != null){
+                        student.rfid = rfid
+                        StudentManager.saveToDatabase()
+                        ctx.response().end()
+                    }else{
+                        ctx.response().setStatusCode(401).end("No student with ID $stuId found")
+                    }
+                }else{
+                    ctx.fail(401)
+                }
+            })
+        }
+        router.get("/api/student/:stuID/image").blockingHandler { ctx ->
+            ctx.user().isAuthorised("readImage") { res ->
+                if (res.result()) {
+                    val stuId = ctx.pathParam("stuID")
+                    val magic = File("./pics/$stuId.jpg")
+                    ctx.response().putHeader("Content-Type", "image/jpeg")
+                    try {
+                        val `is` = FileInputStream(magic)
+                        val bytes = ByteStreams.toByteArray(`is`)
+                        val buffer = Buffer.buffer(bytes)
+                        ctx.response().putHeader("etag", MD5.getMD5String(bytes))
+                        ctx.response().end(buffer)
+                    } catch (e: IOException) {
+                        ctx.fail(404)
+                    }
+
+                } else {
+                    ctx.fail(401)
+                }
+            }
+        }
+
+
         router.post("/api/test").handler { ctx ->
-            ctx.response().end(ctx.user().principal().toString())
+            ctx.response().end()
         }
     }
 }

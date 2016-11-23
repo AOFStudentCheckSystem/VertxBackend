@@ -2,6 +2,7 @@ package cn.codetector.guardianCheck.server.data
 
 import cn.codetector.guardianCheck.server.Main
 import cn.codetector.guardianCheck.server.data.permission.PermissionManager
+import cn.codetector.guardianCheck.server.data.students.StudentManager
 import cn.codetector.guardianCheck.server.data.user.UserManager
 import io.vertx.core.logging.LoggerFactory
 import java.util.concurrent.ExecutorService
@@ -19,6 +20,7 @@ object DataService {
         logger.info("Starting DataService")
         PermissionManager.setDBClient(Main.sharedJDBCClient)
         UserManager.setDBClient(Main.sharedJDBCClient)
+        StudentManager.setDBClient(Main.sharedJDBCClient)
         load()
     }
 
@@ -29,7 +31,9 @@ object DataService {
     fun save(action: () -> Unit) {
         PermissionManager.saveToDatabase {
             UserManager.saveToDatabase {
-                action.invoke()
+                StudentManager.saveToDatabase {
+                    action.invoke()
+                }
             }
         }
     }
@@ -50,7 +54,9 @@ object DataService {
     fun load() {
         PermissionManager.loadFromDatabase {
             UserManager.loadFromDatabase {
-                logger.info("Data Service Loaded")
+                StudentManager.loadFromDatabase {
+                    logger.info("Data Service Loaded")
+                }
             }
         }
     }

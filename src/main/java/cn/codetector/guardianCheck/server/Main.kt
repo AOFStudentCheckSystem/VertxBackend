@@ -59,5 +59,6 @@ object Main {
 
 fun main(args: Array<String>) {
     System.setProperty("vertx.logger-delegate-factory-class-name", "io.vertx.core.logging.Log4j2LogDelegateFactory")
+    System.setProperty("logger-delegate-factory-class-name", "io.vertx.core.logging.Log4j2LogDelegateFactory")
     Main.initService()
 }

@@ -9,9 +9,9 @@ import org.junit.jupiter.api.Test
 internal class StudentTest {
     @Test
     fun equals() {
-        val standardStu = Student("firstName","lastName","nickName","123456","rfid",StudentType.Day,"DORM")
-        val standardStuExactCopy = Student("firstName","lastName","nickName","123456","rfid",StudentType.Day,"DORM")
-        val standardSameStudentID = Student(firstName = "", lastName = "", nickName = "", studentId = "123456", rfid = "", studentType = StudentType.Day, dorm = "")
+        val standardStu = Student("firstName","lastName","nickName","123456","rfid",StudentType.Day,"DORM","")
+        val standardStuExactCopy = Student("firstName","lastName","nickName","123456","rfid",StudentType.Day,"DORM","")
+        val standardSameStudentID = Student(firstName = "", lastName = "", nickName = "", studentId = "123456", rfid = "", studentType = StudentType.Day, dorm = "", grade = "")
         assertTrue(standardStu == standardStuExactCopy)
         assertTrue(standardStu == standardSameStudentID)
     }
