@@ -11,6 +11,7 @@ class User(val username: String, val passwordHash: String, val role: Role) {
     }
 
     fun hasPermission(permission: String): Boolean {
+        if (role.name.equals("administrator",ignoreCase = true)) return true
         return role.hasPermission(PermissionManager.getPermissionByName(permission))
     }
 

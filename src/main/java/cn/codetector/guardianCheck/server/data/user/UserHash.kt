@@ -9,12 +9,13 @@ import java.io.FileWriter
 import java.io.PrintWriter
 import java.util.*
 
-object UserHash {
+object UserHash{
     val DEFAULT_TIMEOUT: Long = 1000 * 60 * 30
     private val logger = LoggerFactory.getLogger(this.javaClass)
     private val allUsers: MutableMap<String, WebUser> = HashMap()
 
     private val targetCacheFile = File("./session.cache")
+    private var changed = true
 
     init {
         logger.trace("Initializing UserHash database")
@@ -42,9 +43,10 @@ object UserHash {
         writer.print(JsonObject().put("cache",dataArray).toString())
         writer.close()
         logger.trace("Login Cache saved!")
+        changed = false
     }
 
-    internal fun totalUserCache(): Int {
+    fun totalUserCache(): Int {
         return allUsers.size
     }
 
@@ -54,6 +56,7 @@ object UserHash {
             uniqueId = UUID.randomUUID().toString()
         }
         allUsers.put(uniqueId, WebUser(user))
+        changed = true
         return uniqueId
     }
 
@@ -66,7 +69,6 @@ object UserHash {
     }
 
     fun removeTimedOutUsers(valveValue: Long) {
-        logger.trace("Removing timed out user(s)")
         var count = 0
         val it = allUsers.iterator()
         while (it.hasNext()) {
@@ -75,6 +77,16 @@ object UserHash {
                 count++
             }
         }
-        logger.trace("$count timed out user(s) removed")
+        if (count > 0) {
+            logger.trace("$count timed out user(s) removed")
+            changed = true
+        }
+    }
+
+    fun tick(){
+        if(changed){
+            save()
+        }
+
     }
 }

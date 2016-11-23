@@ -3,7 +3,7 @@ package cn.codetector.guardianCheck.server.webService.implementations.emoticon;
 import java.io.*;
 import java.util.ArrayList;
 
-class EmoticonManager {
+public class EmoticonManager {
 
     private static ArrayList<String> ems = new ArrayList<>();
 

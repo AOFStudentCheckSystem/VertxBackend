@@ -19,6 +19,10 @@ object PermissionManager : AbstractDataService() {
         logger.info("Permission Manager Initialized")
     }
 
+    fun allPermissions():List<Permission>{
+        return ArrayList<Permission>(serverPermissions.permissions.values)
+    }
+
     fun getPermissionByName(name: String): Permission {
         if (serverPermissions.permissions.contains(name)) {
             return serverPermissions.permissions.get(name)!!
@@ -27,11 +31,16 @@ object PermissionManager : AbstractDataService() {
         }
     }
 
+    fun registerPermission(name: String){
+        serverPermissions.addPermission(Permission(name))
+        savePermissionTable {  }
+    }
+
     private fun getPermissionWithName(name: String): Permission {
         if (serverPermissions.permissions.contains(name)) {
             return serverPermissions.permissions.get(name)!!
         } else {
-            val perm = Permission(name, "Ability to $name")
+            val perm = Permission(name)
             logger.trace("Permission created on use : $perm")
             serverPermissions.addPermission(perm)
             return perm

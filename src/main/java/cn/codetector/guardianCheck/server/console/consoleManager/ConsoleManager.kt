@@ -23,13 +23,18 @@ object ConsoleManager {
     }
 
     internal fun processCommand(command: String) {
-        val args = command.toLowerCase().split(" ").toTypedArray()
+        val args = command.split(" ").toTypedArray()
         if (args.isNotEmpty() && handlers.contains(args[0])) {
-            if (handlers.get(args[0])!!.invoke(CommandHandlers, args) as Boolean) {
-                return
-            } else {
-                System.err.println("Malformed Command")
-                return
+            args[0] = args[0].toLowerCase()
+            try {
+                if (handlers.get(args[0])!!.invoke(CommandHandlers, args) as Boolean) {
+                    return
+                } else {
+                    System.err.println("Malformed Command")
+                    return
+                }
+            }catch (t : Throwable){
+                t.printStackTrace()
             }
         }
         System.err.println("No Command Found")

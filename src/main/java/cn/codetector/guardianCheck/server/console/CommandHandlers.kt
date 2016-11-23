@@ -3,8 +3,10 @@ package cn.codetector.guardianCheck.server.console
 import cn.codetector.guardianCheck.server.Main
 import cn.codetector.guardianCheck.server.console.consoleManager.Command
 import cn.codetector.guardianCheck.server.data.DataService
+import cn.codetector.guardianCheck.server.data.permission.PermissionManager
 import cn.codetector.guardianCheck.server.data.user.UserHash
 import cn.codetector.guardianCheck.server.webService.WebService
+import java.security.Permission
 
 /**
  * Created by codetector on 20/11/2016.
@@ -89,4 +91,23 @@ object CommandHandlers {
         return false
     }
 
+    @Command(command = "permission")
+    fun permissionCommandHandler(args: Array<String>):Boolean{
+        if (args.size > 1) {
+            when (args[1]) {
+                "list" -> {
+                    PermissionManager.allPermissions().forEach(::println)
+                    return true
+                }
+                "add" -> {
+                    if (args.size > 2){
+                        PermissionManager.registerPermission(args[2])
+                        println("Permission ${args[2]} added!")
+                        return true
+                    }
+                }
+            }
+        }
+        return false
+    }
 }

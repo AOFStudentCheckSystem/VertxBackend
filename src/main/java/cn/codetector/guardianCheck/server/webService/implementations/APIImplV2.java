@@ -1,9 +1,12 @@
 package cn.codetector.guardianCheck.server.webService.implementations;
 
+import cn.codetector.guardianCheck.server.data.user.User;
+import cn.codetector.guardianCheck.server.data.user.UserHash;
+import cn.codetector.guardianCheck.server.data.user.UserManager;
 import cn.codetector.guardianCheck.server.webService.IWebAPIImpl;
 import cn.codetector.guardianCheck.server.webService.WebAPIImpl;
+import cn.codetector.guardianCheck.server.webService.implementations.emoticon.EmoticonManager;
 import cn.codetector.util.Validator.MD5;
-import cn.codetector.util.Validator.SHA;
 import com.google.common.io.ByteStreams;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -14,33 +17,27 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.auth.jwt.JWTAuth;
-import io.vertx.ext.auth.jwt.JWTOptions;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.JWTAuthHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @WebAPIImpl(prefix = "v2")
 public class APIImplV2 implements IWebAPIImpl {
     private Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+    private Set<String> noAuthExceptions = new HashSet<>();
 
     @Override
     public void initAPI(@NotNull Router router, @NotNull Vertx sharedVertx, @NotNull JDBCClient dbClient) {
-        JWTAuth jwtAuth = JWTAuth.create(sharedVertx, new JsonObject().put("keyStore", new JsonObject()
-                .put("path", "keystore.jceks")
-                .put("type", "jceks")
-                .put("password", "secret")));
-        JWTAuthHandler authHandler = JWTAuthHandler.create(jwtAuth, "/v2/api/auth");
+        //Register exceptions
+        noAuthExceptions.add("/v2/api/auth");
+
         router.options("/api/*").handler(ctx -> {
             ctx.response().putHeader("Access-Control-Allow-Origin", "*");
             ctx.response().putHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -55,51 +52,47 @@ public class APIImplV2 implements IWebAPIImpl {
             ctx.response().putHeader("Access-Control-Allow-Origin", "*");
             ctx.next();
         });
-        router.route("/api/*").handler(authHandler);
         router.post("/api/*").handler(ctx -> {
             ctx.request().setExpectMultipart(true);
             ctx.request().endHandler(aVoid -> {
                 ctx.next();
             });
         });
-
-
-        // Authentication
-        // {permissions:["readEvent","updateEvent","readStudent","sendEmail","readImage"]}
-        // {permissions:["readEvent","addEvent","removeEvent","updateEvent","readStudent","addStudent","updateStudent","sendEmail","readImage"]}
-        router.post("/api/auth").handler(ctx -> {
-            dbClient.getConnection(conn -> {
-                if (conn.succeeded()) {
-                    String username = ctx.request().getFormAttribute("username");
-                    String pw = SHA.getSHA256String(ctx.request().getFormAttribute("password"));
-                    conn.result().queryWithParams("SELECT (SELECT `permissions` FROM `dummyroles` WHERE `dummyauth`.`role`=`dummyroles`.`name`) as `permissions`, `password` FROM `dummyauth` WHERE `username`=?", new JsonArray().add(username), res -> {
-                        if (res.succeeded()) {
-                            if (res.result().getNumRows() > 0 && res.result().getRows().get(0).getString("password").equals(pw)) {
-                                try {
-                                    JsonArray permissionArray = new JsonObject(res.result().getRows().get(0).getString("permissions")).getJsonArray("permissions");
-                                    JWTOptions options = new JWTOptions();
-                                    permissionArray.forEach(obj -> {
-                                        options.addPermission(String.valueOf(obj));
-                                    });
-                                    ctx.response().end(new JsonObject().put("token", jwtAuth.generateToken(new JsonObject()
-                                            .put("user", username), options)).toString());
-                                } catch (Exception e) {
-                                    ctx.fail(e);
-                                }
-                            } else {
-//                                logger.warn("host: " + ctx.request().host() + " username: " + username);
-                                ctx.fail(401);
-                            }
-                        } else {
-                            ctx.fail(res.cause());
-                        }
-                        conn.result().close();
-                    });
+        router.route("/api/*").handler(ctx -> {
+            String path = ctx.request().path();
+            if (path.endsWith("/")) {
+                path = path.substring(0, path.length() - 1);
+            }
+            if (noAuthExceptions.contains(path)) {
+                ctx.next();
+            } else {
+                String auth = ctx.request().getHeader("Authorization").replace("Bearer ", "");
+                if (UserHash.INSTANCE.isAuthKeyValid(auth)) {
+                    ctx.setUser(UserHash.INSTANCE.getUserByAuthKey(auth));
+                    ctx.next();
                 } else {
-                    ctx.fail(conn.cause());
+                    logger.info(ctx.request().getHeader("Authorization"));
+                    ctx.fail(401);
                 }
-            });
+            }
         });
+        router.post("/api/auth").handler(ctx -> {
+            if (UserManager.INSTANCE.hasUser(ctx.request().getFormAttribute("username"))) {
+                User user = UserManager.INSTANCE.getUserByUsername(ctx.request().getFormAttribute("username"));
+                if (user.authenticate(ctx.request().getFormAttribute("password"))) {
+                    String hash = UserHash.INSTANCE.createWebUser(user);
+                    ctx.response().end(new JsonObject().put("token", hash).toString());
+                } else {
+                    ctx.fail(401);
+                }
+            } else {
+                ctx.fail(401);
+            }
+        });
+        router.post("/api/auth/verify").handler ( ctx ->{
+            ctx.response().end(ctx.user().principal().put("emoticon", EmoticonManager.get()).toString());
+        });
+
         //Deprecation
         router.get("/api/student/list").handler(ctx -> {
             ctx.user().isAuthorised("readStudent", v -> {

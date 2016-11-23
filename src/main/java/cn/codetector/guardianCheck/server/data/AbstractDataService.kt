@@ -28,4 +28,8 @@ abstract class AbstractDataService {
     fun loadFromDatabase() {
         loadFromDatabase {}
     }
+
+    fun tick(){
+
+    }
 }
