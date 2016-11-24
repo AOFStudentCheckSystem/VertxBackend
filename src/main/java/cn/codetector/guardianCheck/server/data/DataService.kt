@@ -63,6 +63,7 @@ object DataService {
         PermissionManager.loadFromDatabase {
             UserManager.loadFromDatabase {
                 StudentManager.loadFromDatabase {
+                    UserHash.loadCache()
                     logger.info("Data Service Loaded")
                 }
             }

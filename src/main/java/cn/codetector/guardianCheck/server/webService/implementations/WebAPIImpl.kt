@@ -29,15 +29,18 @@ class WebAPIImpl: IWebAPIImpl {
     private val logger = LoggerFactory.getLogger("WebPortal API")
     private val noAuthExceptions: Set<String> = hashSetOf("/web/auth","/web/register")
     override fun initAPI(router: Router, sharedVertx: Vertx, dbClient: JDBCClient) {
+        router.route().failureHandler { ctx ->
+            ctx.response().setStatusCode(ctx.statusCode()).putHeader("Access-Control-Allow-Origin", "*").end()
+        }
         //Pre-flight handler
-        router.options("/api/*").handler { ctx ->
+        router.options().handler { ctx ->
             ctx.response().putHeader("Access-Control-Allow-Origin", "*")
             ctx.response().putHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
             ctx.response().putHeader("Access-Control-Allow-Headers", "Authorization")
             ctx.response().end()
         }
         //General Handlers
-        router.route("/api/*").handler { ctx ->
+        router.route().handler { ctx ->
             var path = ctx.request().path()
             if (path.endsWith("/")) {
                 path = path.substring(0, path.length - 1)
@@ -50,20 +53,16 @@ class WebAPIImpl: IWebAPIImpl {
                     ctx.setUser(UserHash.getUserByAuthKey(auth))
                     ctx.next()
                 } else {
-                    logger.info(ctx.request().getHeader("Authorization"))
                     ctx.fail(401)
                 }
             }
         }
         router.route().handler { ctx ->
             ctx.response().putHeader("Content-Type", "text/json; charset=utf-8")
-            ctx.next()
-        }
-        router.route("/api/*").handler { ctx ->
             ctx.response().putHeader("Access-Control-Allow-Origin", "*")
             ctx.next()
         }
-        router.post("/api/*").handler { ctx ->
+        router.post().handler { ctx ->
             ctx.request().isExpectMultipart = true
             ctx.request().endHandler { aVoid -> ctx.next() }
         }

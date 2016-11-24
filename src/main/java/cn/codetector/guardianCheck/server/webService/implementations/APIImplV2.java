@@ -71,7 +71,6 @@ public class APIImplV2 implements IWebAPIImpl {
                     ctx.setUser(UserHash.INSTANCE.getUserByAuthKey(auth));
                     ctx.next();
                 } else {
-                    logger.info(ctx.request().getHeader("Authorization"));
                     ctx.fail(401);
                 }
             }
@@ -89,7 +88,7 @@ public class APIImplV2 implements IWebAPIImpl {
                 ctx.fail(401);
             }
         });
-        router.post("/api/auth/verify").handler ( ctx ->{
+        router.post("/api/auth/verify").handler(ctx -> {
             ctx.response().end(ctx.user().principal().put("emoticon", EmoticonManager.get()).toString());
         });
 

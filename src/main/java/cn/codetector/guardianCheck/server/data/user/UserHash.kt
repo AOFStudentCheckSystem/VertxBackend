@@ -1,12 +1,14 @@
 package cn.codetector.guardianCheck.server.data.user
 
 import cn.codetector.util.FileUtil.FileReader
+import com.google.common.io.Files
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.core.logging.LoggerFactory
 import java.io.File
 import java.io.FileWriter
 import java.io.PrintWriter
+import java.nio.charset.Charset
 import java.util.*
 
 object UserHash{
@@ -15,22 +17,7 @@ object UserHash{
     private val allUsers: MutableMap<String, WebUser> = HashMap()
 
     private val targetCacheFile = File("./session.cache")
-    private var changed = true
-
-    init {
-        logger.trace("Initializing UserHash database")
-        if (targetCacheFile.exists() && targetCacheFile.isFile){
-            val dataString = FileReader.readFile(targetCacheFile)
-            if (dataString.isNotBlank()) {
-                val cachedData = JsonObject(dataString).getJsonArray("cache")
-                cachedData.forEach { item->
-                    allUsers.put((item as JsonObject).getString("key"),WebUser(UserManager.getUserByUsername(item.getString("user")),item.getLong("lastActive")))
-                }
-                logger.trace("All (${allUsers.size}) user cache loaded")
-                removeTimedOutUsers(DEFAULT_TIMEOUT)
-            }
-        }
-    }
+    private var changed = false
 
     fun save(){
         logger.trace("Saving login Cache...")
@@ -40,10 +27,25 @@ object UserHash{
         allUsers.forEach { entry ->
             dataArray.add(JsonObject().put("key",entry.key).put("user",entry.value.user.username).put("lastActive",entry.value.lastActive))
         }
-        writer.print(JsonObject().put("cache",dataArray).toString())
+        writer.println(JsonObject().put("cache",dataArray).toString())
         writer.close()
         logger.trace("Login Cache saved!")
         changed = false
+    }
+
+    fun loadCache(){
+        logger.trace("Initializing UserHash database")
+        if (targetCacheFile.exists() && targetCacheFile.isFile){
+            val dataString = Files.toString(targetCacheFile, Charset.forName("utf-8"))
+            if (dataString.isNotBlank()) {
+                val cachedData = JsonObject(dataString).getJsonArray("cache")
+                cachedData.forEach { item->
+                    allUsers.put((item as JsonObject).getString("key"),WebUser(UserManager.getUserByUsername(item.getString("user")),item.getLong("lastActive")))
+                }
+                logger.trace("All (${allUsers.size}) user cache loaded")
+                removeTimedOutUsers(DEFAULT_TIMEOUT)
+            }
+        }
     }
 
     fun totalUserCache(): Int {
@@ -88,5 +90,10 @@ object UserHash{
             save()
         }
 
+    }
+
+    fun clearCache() {
+        allUsers.clear()
+        save()
     }
 }

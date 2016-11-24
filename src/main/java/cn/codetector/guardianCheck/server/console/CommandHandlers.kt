@@ -84,6 +84,11 @@ object CommandHandlers {
                 }
                 "reload" -> {
                     UserHash.removeTimedOutUsers(UserHash.DEFAULT_TIMEOUT)
+                    println("Finished removing timed out users")
+                    return true
+                }
+                "clear" -> {
+                    UserHash.clearCache()
                     return true
                 }
             }
