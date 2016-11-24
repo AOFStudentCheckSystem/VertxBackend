@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2016. Codetector (Yaotian Feng)
+ */
+
 package cn.codetector.guardianCheck.server.data
 
 import io.vertx.ext.jdbc.JDBCClient
@@ -29,7 +33,7 @@ abstract class AbstractDataService {
         loadFromDatabase {}
     }
 
-    fun tick(){
+    fun tick() {
 
     }
 }

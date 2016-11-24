@@ -1,8 +1,12 @@
+/*
+ * Copyright (c) 2016. Codetector (Yaotian Feng)
+ */
+
 package cn.codetector.guardianCheck.server.data.event
 
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
 
 internal class EventTest {
     @Test

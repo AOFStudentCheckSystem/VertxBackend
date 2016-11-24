@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2016. Codetector (Yaotian Feng)
+ */
+
 package cn.codetector.guardianCheck.server
 
 import cn.codetector.guardianCheck.server.console.consoleManager.ConsoleManager
@@ -31,7 +35,7 @@ object Main {
         ConsoleManager.monitorStream("ConsoleIn", System.`in`)
     }
 
-    fun save(){
+    fun save() {
         UserHash.save()
         DataService.save()
     }

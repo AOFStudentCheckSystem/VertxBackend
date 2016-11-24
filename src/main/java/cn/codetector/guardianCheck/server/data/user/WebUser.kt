@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2016. Codetector (Yaotian Feng)
+ */
+
 package cn.codetector.guardianCheck.server.data.user
 
 import io.vertx.core.AsyncResult
@@ -13,7 +17,7 @@ class WebUser(val user: User) : io.vertx.ext.auth.User {
     var lastActive = System.currentTimeMillis()
         private set
 
-    constructor(user: User, lastActive:Long) : this(user){
+    constructor(user: User, lastActive: Long) : this(user) {
         this.lastActive = lastActive
     }
 

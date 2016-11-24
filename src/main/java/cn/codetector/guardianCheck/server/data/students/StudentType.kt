@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2016. Codetector (Yaotian Feng)
+ */
+
 package cn.codetector.guardianCheck.server.data.students
 
 /**
@@ -9,11 +13,12 @@ enum class StudentType(val value: Int) {
     Unknown(0);
 
     override fun toString(): String {
-        return when(value){
+        return when (value) {
             Day.value -> "Day"
             Boarding.value -> "Boarding"
             else -> {
                 "Unknown"
             }
         }
-    }}
+    }
+}

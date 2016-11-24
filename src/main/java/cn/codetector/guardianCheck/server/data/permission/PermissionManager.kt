@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2016. Codetector (Yaotian Feng)
+ */
+
 package cn.codetector.guardianCheck.server.data.permission
 
 import cn.codetector.guardianCheck.server.data.AbstractDataService
@@ -19,7 +23,7 @@ object PermissionManager : AbstractDataService() {
         logger.info("Permission Manager Initialized")
     }
 
-    fun allPermissions():List<Permission>{
+    fun allPermissions(): List<Permission> {
         return ArrayList<Permission>(serverPermissions.permissions.values)
     }
 
@@ -31,9 +35,9 @@ object PermissionManager : AbstractDataService() {
         }
     }
 
-    fun registerPermission(name: String){
+    fun registerPermission(name: String) {
         serverPermissions.addPermission(Permission(name))
-        savePermissionTable {  }
+        savePermissionTable { }
     }
 
     private fun getPermissionWithName(name: String): Permission {

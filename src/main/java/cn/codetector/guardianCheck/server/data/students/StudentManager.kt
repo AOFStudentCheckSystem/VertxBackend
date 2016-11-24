@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2016. Codetector (Yaotian Feng)
+ */
+
 package cn.codetector.guardianCheck.server.data.students
 
 import cn.codetector.guardianCheck.server.data.AbstractDataService
@@ -32,7 +36,7 @@ object StudentManager : AbstractDataService() {
         return allStudents.contains(student)
     }
 
-    fun allStudentsAsJsonArray():String{
+    fun allStudentsAsJsonArray(): String {
         val jsonArray = JsonArray()
         allStudents.forEach { student ->
             jsonArray.add(JsonObject(student.toJsonString()))

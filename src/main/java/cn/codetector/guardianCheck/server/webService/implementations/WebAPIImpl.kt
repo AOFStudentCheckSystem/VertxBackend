@@ -1,8 +1,10 @@
+/*
+ * Copyright (c) 2016. Codetector (Yaotian Feng)
+ */
+
 package cn.codetector.guardianCheck.server.webService.implementations
 
-import cn.codetector.guardianCheck.server.data.permission.PermissionManager
 import cn.codetector.guardianCheck.server.data.students.StudentManager
-import cn.codetector.guardianCheck.server.data.user.User
 import cn.codetector.guardianCheck.server.data.user.UserHash
 import cn.codetector.guardianCheck.server.data.user.UserManager
 import cn.codetector.guardianCheck.server.data.user.WebUser
@@ -25,9 +27,9 @@ import java.io.IOException
  * Created by codetector on 21/11/2016.
  */
 @WebAPIImpl(prefix = "web")
-class WebAPIImpl: IWebAPIImpl {
+class WebAPIImpl : IWebAPIImpl {
     private val logger = LoggerFactory.getLogger("WebPortal API")
-    private val noAuthExceptions: Set<String> = hashSetOf("/web/auth","/web/register")
+    private val noAuthExceptions: Set<String> = hashSetOf("/web/auth", "/web/register")
     override fun initAPI(router: Router, sharedVertx: Vertx, dbClient: JDBCClient) {
         router.route().failureHandler { ctx ->
             ctx.response().setStatusCode(ctx.statusCode()).putHeader("Access-Control-Allow-Origin", "*").end()
@@ -86,34 +88,34 @@ class WebAPIImpl: IWebAPIImpl {
         }
         //User Handlers
         router.get("/user/permissions").handler { ctx ->
-            ctx.response().end(JsonObject().put("permissions",JsonArray((ctx.user() as WebUser).user.role.allPermissions())).toString())
+            ctx.response().end(JsonObject().put("permissions", JsonArray((ctx.user() as WebUser).user.role.allPermissions())).toString())
         }
 
         //Student Handlers
         //All Student handler
         router.get("/student/all").handler { ctx ->
             ctx.user().isAuthorised("readStudent", { auth ->
-                if (auth.result()){
-                    ctx.response().end(JsonObject().put("students",JsonArray(StudentManager.allStudentsAsJsonArray())).toString())
-                }else{
+                if (auth.result()) {
+                    ctx.response().end(JsonObject().put("students", JsonArray(StudentManager.allStudentsAsJsonArray())).toString())
+                } else {
                     ctx.fail(401)
                 }
             })
         }
         router.post("/student/:stuId/update").handler { ctx ->
             ctx.user().isAuthorised("updateStudent", { auth ->
-                if (auth.result()){
+                if (auth.result()) {
                     val stuId = ctx.pathParam("stuId")
                     val rfid = ctx.request().getFormAttribute("RFID")
                     val student = StudentManager.findStudentById(stuId)
-                    if (student != null){
+                    if (student != null) {
                         student.rfid = rfid
                         StudentManager.saveToDatabase()
                         ctx.response().end()
-                    }else{
+                    } else {
                         ctx.response().setStatusCode(401).end("No student with ID $stuId found")
                     }
-                }else{
+                } else {
                     ctx.fail(401)
                 }
             })

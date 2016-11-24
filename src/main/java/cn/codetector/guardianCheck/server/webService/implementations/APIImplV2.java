@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2016. Codetector (Yaotian Feng)
+ */
+
 package cn.codetector.guardianCheck.server.webService.implementations;
 
 import cn.codetector.guardianCheck.server.data.user.User;
@@ -8,6 +12,7 @@ import cn.codetector.guardianCheck.server.webService.WebAPIImpl;
 import cn.codetector.guardianCheck.server.webService.implementations.emoticon.EmoticonManager;
 import cn.codetector.util.Validator.MD5;
 import com.google.common.io.ByteStreams;
+import com.google.common.primitives.Ints;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -244,8 +249,14 @@ public class APIImplV2 implements IWebAPIImpl {
                         if (conn.succeeded()) {
                             String eventId = Long.toString(System.currentTimeMillis(), Character.MAX_RADIX);
                             String eventName = ctx.request().getFormAttribute("eventName");
-                            conn.result().updateWithParams("INSERT INTO `dummyevent` (`eventId`, `eventName`, `eventStatus`) VALUES (?, ?, ?)",
-                                    new JsonArray().add(eventId).add(eventName).add(0), res -> {
+                            Integer eventTime = Ints.tryParse(ctx.request().getFormAttribute("eventTime"));
+                            String sql = eventTime == null ? "INSERT INTO `dummyevent` (`eventId`, `eventName`, `eventStatus`) VALUES (?, ?, ?)" : "INSERT INTO `dummyevent` (`eventId`, `eventName`, `eventStatus`,`eventTime`) VALUES (?, ?, ?, ?)";
+                            JsonArray params = new JsonArray().add(eventId).add(eventName).add(0);
+                            if (eventTime != null) {
+                                params.add(eventTime);
+                            }
+                            conn.result().updateWithParams(sql, params
+                                    , res -> {
                                         if (res.succeeded()) {
 //                                            SocketManager.getSharedSocketManager().notifyAllClient(new NetNotificationPacket(Notification.UPDATE_EVENTS_LIST, "ADD"));
                                             ctx.response().end(new JsonObject().put("eventId", eventId).toString());

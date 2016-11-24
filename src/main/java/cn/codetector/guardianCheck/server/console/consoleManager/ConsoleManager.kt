@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2016. Codetector (Yaotian Feng)
+ */
+
 package cn.codetector.guardianCheck.server.console.consoleManager
 
 import cn.codetector.guardianCheck.server.console.CommandHandlers
@@ -33,7 +37,7 @@ object ConsoleManager {
                     System.err.println("Malformed Command")
                     return
                 }
-            }catch (t : Throwable){
+            } catch (t: Throwable) {
                 t.printStackTrace()
             }
         }
