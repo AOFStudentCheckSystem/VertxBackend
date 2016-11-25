@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2016. Codetector (Yaotian Feng)
+ */
+
 package cn.codetector.guardianCheck.server.webService.implementations.emoticon;
 
 import java.io.*;

@@ -15,6 +15,10 @@ object StudentManager : AbstractDataService() {
     private val logger = LoggerFactory.getLogger(this.javaClass)
     private val allStudents: MutableSet<Student> = HashSet()
 
+    val NO_RFID_FILTER: (Student) -> (Boolean) = { student: Student ->
+        student.rfid.isNotBlank()
+    }
+
     fun findStudentById(studentID: String): Student? {
         return allStudents.find { stu ->
             stu.studentId.equals(other = studentID, ignoreCase = true)
@@ -34,6 +38,14 @@ object StudentManager : AbstractDataService() {
 
     fun containsStudent(student: Student): Boolean {
         return allStudents.contains(student)
+    }
+
+    fun countStudent(): Int {
+        return allStudents.size
+    }
+
+    fun countStudent(filter: (student: Student) -> (Boolean)): Int {
+        return allStudents.filter(filter).size
     }
 
     fun allStudentsAsJsonArray(): String {

@@ -11,6 +11,7 @@ import io.vertx.ext.jdbc.JDBCClient
  */
 abstract class AbstractDataService {
     protected var dbClient: JDBCClient? = null
+    private var hasChange = false
 
     fun isInitialized(): Boolean {
         return this.dbClient != null
@@ -33,7 +34,19 @@ abstract class AbstractDataService {
         loadFromDatabase {}
     }
 
-    fun tick() {
+    protected fun markChange() {
+        this.hasChange = true
+    }
+
+    protected fun hasChanged(): Boolean {
+        if (hasChange) {
+            hasChange = false
+            return true
+        }
+        return false
+    }
+
+    open fun tick() {
 
     }
 }

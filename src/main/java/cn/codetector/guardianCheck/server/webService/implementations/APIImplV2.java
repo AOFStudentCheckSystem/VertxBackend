@@ -4,6 +4,7 @@
 
 package cn.codetector.guardianCheck.server.webService.implementations;
 
+import cn.codetector.guardianCheck.server.data.students.StudentManager;
 import cn.codetector.guardianCheck.server.data.user.User;
 import cn.codetector.guardianCheck.server.data.user.UserHash;
 import cn.codetector.guardianCheck.server.data.user.UserManager;
@@ -123,52 +124,16 @@ public class APIImplV2 implements IWebAPIImpl {
         router.get("/api/student/all").handler(ctx -> {
             ctx.user().isAuthorised("readStudent", v -> {
                 if (v.result()) {
-                    dbClient.getConnection(conn -> {
-                        if (conn.succeeded()) {
-                            conn.result().query("SELECT `studentID` as `studentId`, `firstName`, `lastName`, `nickName`, `rfid`, `grade`, `type`, `dorm` FROM `dummystudent` WHERE 1", cbk -> {
-                                if (cbk.succeeded()) {
-                                    ctx.response().end(new JsonObject().put("students", cbk.result().getRows()).toString());
-                                } else {
-                                    ctx.fail(cbk.cause());
-                                }
-                                conn.result().close();
-                            });
-                        } else {
-                            ctx.fail(conn.cause());
-                        }
-                    });
+                    ctx.response().end(new JsonObject().put("students", new JsonArray(StudentManager.INSTANCE.allStudentsAsJsonArray())).toString());
                 } else {
                     ctx.fail(401);
                 }
             });
         });
-        // Deprecation
         router.get("/api/student/count").handler(ctx -> {
             ctx.user().isAuthorised("readStudent", v -> {
                 if (v.result()) {
-                    dbClient.getConnection(conn -> {
-                        if (conn.succeeded()) {
-                            conn.result().query("SELECT count(*) FROM `dummystudent`", res -> {
-                                if (res.succeeded()) {
-                                    final int total = res.result().getResults().get(0).getInteger(0);
-                                    conn.result().query("SELECT count(*) FROM `dummystudent` WHERE `rfid` IS NOT NULL", res2 -> {
-                                        if (res2.succeeded()) {
-                                            int done = res2.result().getResults().get(0).getInteger(0);
-                                            ctx.response().end(new JsonObject().put("total", total).put("done", done).toString());
-                                        } else {
-                                            ctx.fail(res2.cause());
-                                        }
-                                        conn.result().close();
-                                    });
-                                } else {
-                                    ctx.fail(res.cause());
-                                    conn.result().close();
-                                }
-                            });
-                        } else {
-                            ctx.fail(conn.cause());
-                        }
-                    });
+                    ctx.response().end(new JsonObject().put("total", StudentManager.INSTANCE.countStudent()).put("done", StudentManager.INSTANCE.countStudent(StudentManager.INSTANCE.getNO_RFID_FILTER())).toString());
                 } else {
                     ctx.fail(401);
                 }

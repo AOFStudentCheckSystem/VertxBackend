@@ -37,6 +37,7 @@ object PermissionManager : AbstractDataService() {
 
     fun registerPermission(name: String) {
         serverPermissions.addPermission(Permission(name))
+        markChange()
         savePermissionTable { }
     }
 
@@ -47,6 +48,7 @@ object PermissionManager : AbstractDataService() {
             val perm = Permission(name)
             logger.trace("Permission created on use : $perm")
             serverPermissions.addPermission(perm)
+            markChange()
             return perm
         }
     }
@@ -56,6 +58,15 @@ object PermissionManager : AbstractDataService() {
             return serverRoles.get(name)!!
         } else {
             throw IllegalArgumentException("No Role named '$name' Found")
+        }
+    }
+
+    fun createRoleWithName(name: String): Boolean {
+        if (!serverRoles.containsKey(name)) {
+            markChange()
+            return (serverRoles.put(name, Role(name)) != null)
+        } else {
+            return false
         }
     }
 
@@ -182,6 +193,12 @@ object PermissionManager : AbstractDataService() {
             } else {
 
             }
+        }
+    }
+
+    override fun tick() {
+        if (hasChanged()) {
+            saveToDatabase()
         }
     }
 }
