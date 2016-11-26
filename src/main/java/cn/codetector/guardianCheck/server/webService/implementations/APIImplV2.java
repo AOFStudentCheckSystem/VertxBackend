@@ -77,7 +77,7 @@ public class APIImplV2 implements IWebAPIImpl {
                     ctx.setUser(UserHash.INSTANCE.getUserByAuthKey(auth));
                     ctx.next();
                 } else {
-                    ctx.fail(401);
+                    ctx.response().setStatusCode(401).end("Invalid Token");
                 }
             }
         });
