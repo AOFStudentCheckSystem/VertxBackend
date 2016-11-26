@@ -94,7 +94,7 @@ public class APIImplV2 implements IWebAPIImpl {
                 ctx.fail(401);
             }
         });
-        router.post("/api/auth/verify").handler(ctx -> {
+        router.route("/api/auth/verify").handler(ctx -> {
             ctx.response().end(ctx.user().principal().put("emoticon", EmoticonManager.get()).toString());
         });
 
@@ -262,7 +262,7 @@ public class APIImplV2 implements IWebAPIImpl {
                 }
             });
         });
-        router.post("/api/event/:eventId/complete").handler(ctx -> {
+        router.route("/api/event/:eventId/complete").handler(ctx -> {
             ctx.user().isAuthorised("updateEvent", v -> {
                 if (v.result()) {
                     dbClient.getConnection(conn -> {
@@ -287,7 +287,7 @@ public class APIImplV2 implements IWebAPIImpl {
                 }
             });
         });
-        router.post("/api/event/:eventId/checkout").handler(ctx -> {
+        router.route("/api/event/:eventId/checkout").handler(ctx -> {
             Logger logger = LoggerFactory.getLogger("apiv2.handler.event.checkout");
             String eventId = ctx.pathParam("eventId");
             ctx.user().isAuthorised("checkoutEvent", a -> {
@@ -423,7 +423,7 @@ public class APIImplV2 implements IWebAPIImpl {
                 }
             });
         });
-        router.post("/api/event/:eventId/delete").handler(ctx -> {
+        router.route("/api/event/:eventId/delete").handler(ctx -> {
             ctx.user().isAuthorised("removeEvent", v -> {
                 if (v.result()) {
                     dbClient.getConnection(conn -> {
@@ -432,7 +432,6 @@ public class APIImplV2 implements IWebAPIImpl {
                         if (conn.succeeded()) {
                             conn.result().updateWithParams("DELETE FROM `dummyevent` WHERE `eventId`=? AND `eventStatus`<?", new JsonArray().add(eventId).add(force ? 3 : 1), res -> {
                                 if (res.succeeded()) {
-//                                    SocketManager.getSharedSocketManager().notifyAllClient(new NetNotificationPacket(Notification.UPDATE_EVENTS_LIST, "DELETE"));
                                     ctx.response().end();
                                 } else {
                                     ctx.fail(res.cause());
