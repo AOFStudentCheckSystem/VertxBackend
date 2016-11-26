@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2016. Codetector (Yaotian Feng)
+ */
+
 package cn.codetector.guardianCheck.server.data.database
 
 import cn.codetector.util.Configuration.ConfigurationManager
@@ -12,8 +16,8 @@ object SharedDBConfig {
     val driver_class = dbConfig.getStringValue("driver_class", "com.mysql.cj.jdbc.Driver")
     val user = dbConfig.getStringValue("user", "root")
     val password = dbConfig.getStringValue("password", "")
-    val max_pool_size = dbConfig.getIntergerValue("max_pool_size", 15)
-    val initial_pool_size = dbConfig.getIntergerValue("initial_pool_size", 3)
+    val max_pool_size = dbConfig.getIntegerValue("max_pool_size", 15)
+    val initial_pool_size = dbConfig.getIntegerValue("initial_pool_size", 3)
     val db_url = dbConfig.getStringValue("url", "jdbc:mysql://localhost:3306/")
     val db_name = dbConfig.getStringValue("db_name", "sentora_postfix")
     val db_ssl = dbConfig.getStringValue("useSSL", "false")

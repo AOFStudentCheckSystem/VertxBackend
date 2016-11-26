@@ -4,6 +4,7 @@
 
 package cn.codetector.guardianCheck.server.data.user
 
+import cn.codetector.guardianCheck.server.Main
 import com.google.common.io.Files
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
@@ -15,7 +16,7 @@ import java.nio.charset.Charset
 import java.util.*
 
 object UserHash {
-    val DEFAULT_TIMEOUT: Long = 1000 * 60 * 30
+    val DEFAULT_TIMEOUT: Long = Main.globalConfig.getLongValue("userTimeout", 1000 * 60 * 30)
     private val logger = LoggerFactory.getLogger(this.javaClass)
     private val allUsers: MutableMap<String, WebUser> = HashMap()
 
@@ -89,10 +90,10 @@ object UserHash {
     }
 
     fun tick() {
+        removeTimedOutUsers(DEFAULT_TIMEOUT)
         if (changed) {
             save()
         }
-
     }
 
     fun clearCache() {

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2016. Codetector (Yaotian Feng)
+ */
+
 package cn.codetector.guardianCheck.server.webService
 
 import cn.codetector.util.Configuration.Configuration
@@ -21,7 +25,7 @@ object WebService {
 
     private val config: Configuration = ConfigurationManager.getConfiguration("webConfig.json")
     private val useSSL = config.getBooleanValue("enableSSL", false)
-    private val httpPort = config.getIntergerValue("serverPort", 8000)
+    private val httpPort = config.getIntegerValue("serverPort", 8000)
     private val sslKeyStore = config.getStringValue("SSLKeystoreFile", "key.jks")
     private val sslPassword = config.getStringValue("SSLKeystorePassword", "password")
 
@@ -78,7 +82,7 @@ object WebService {
                 router.accept(context)
             }.listen(httpPort, {
                 handler ->
-                this.isServiceRunning = true;
+                this.isServiceRunning = true
                 logger.info("WebService started at Port: $httpPort, SSL=$useSSL")
             })
         } else {

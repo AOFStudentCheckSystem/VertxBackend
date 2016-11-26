@@ -18,7 +18,7 @@ import org.apache.logging.log4j.LogManager
 object Main {
     val rootLogger = LogManager.getLogger("Server Root")
     val globalConfig = ConfigurationManager.getConfiguration("mainConfig.json")
-    val sharedVertx: Vertx = Vertx.vertx(VertxOptions().setWorkerPoolSize(globalConfig.getIntergerValue("workerPoolSize", 32)))
+    val sharedVertx: Vertx = Vertx.vertx(VertxOptions().setWorkerPoolSize(globalConfig.getIntegerValue("workerPoolSize", 32)))
     val sharedJDBCClient: JDBCClient = JDBCClient.createShared(sharedVertx, SharedDBConfig.getVertXJDBCConfigObject())
 
     init {
