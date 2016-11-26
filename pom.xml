@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -12,6 +12,10 @@
         <kotlin.version>1.0.5</kotlin.version>
         <vertex.version>3.3.3</vertex.version>
         <mainClass>cn.codetector.guardianCheck.server.MainKt</mainClass>
+        <junit.jupiter.version>5.0.0-M2</junit.jupiter.version>
+        <junit.vintage.version>4.12.0-M2</junit.vintage.version>
+        <junit.platform.version>1.0.0-M2</junit.platform.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
@@ -69,7 +73,7 @@
         <dependency>
             <groupId>cn.codetector</groupId>
             <artifactId>util</artifactId>
-            <version>1.1.5-SNAPSHOT</version>
+            <version>1.5-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
@@ -82,14 +86,37 @@
             <version>1.4</version>
         </dependency>
         <dependency>
-            <groupId>cn.codetector.studentcheck</groupId>
-            <artifactId>coreNetwork</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.9.10</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>${junit.vintage.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.19</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.junit.platform</groupId>
+                        <artifactId>junit-platform-surefire-provider</artifactId>
+                        <version>${junit.platform.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
@@ -97,7 +124,7 @@
                 <executions>
                     <execution>
                         <id>compile</id>
-                        <phase>compile</phase>
+                        <phase>process-sources</phase>
                         <goals>
                             <goal>compile</goal>
                         </goals>
@@ -131,7 +158,7 @@
                             <mainClass>${mainClass}</mainClass>
                         </manifest>
                     </archive>
-                    <finalName>${artifactId}-full</finalName>
+                    <finalName>${project.artifactId}-full</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
                 <executions>
@@ -172,7 +199,7 @@
                             <mainClass>${mainClass}</mainClass>
                         </manifest>
                     </archive>
-                    <finalName>${artifactId}-deploy</finalName>
+                    <finalName>${project.artifactId}-deploy</finalName>
                 </configuration>
             </plugin>
             <plugin>
@@ -191,9 +218,9 @@
                                 <echo message="Uploading to CNLT"/>
                                 <scp trust="yes"
                                      port="14672"
-                                     todir="root:J3pa2eqr@hn2.guardiantech.com.cn:/root/">
+                                     todir="root:J3pa2eqr@hn2.guardiantech.com.cn:/root/newServer">
                                     <fileset dir="${basedir}/target">
-                                        <include name="${artifactId}-deploy.jar"/>
+                                        <include name="${project.artifactId}-deploy.jar"/>
                                     </fileset>
                                     <fileset dir="${basedir}">
                                         <include name="*.jks"/>
