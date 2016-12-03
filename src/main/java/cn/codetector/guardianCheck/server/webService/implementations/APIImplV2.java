@@ -555,6 +555,7 @@ public class APIImplV2 implements IWebAPIImpl {
                 if (result.result()) {
                     String eventId = ctx.pathParam("eventId");
                     String dataStr = ctx.request().getFormAttribute("data");
+                    logger.error("ADD:"+dataStr);
                     if (dataStr != null) {
                         JsonObject data = new JsonObject(dataStr);
                         // not required
