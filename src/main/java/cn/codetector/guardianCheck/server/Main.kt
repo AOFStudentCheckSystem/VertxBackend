@@ -14,6 +14,7 @@ import io.vertx.core.Vertx
 import io.vertx.core.VertxOptions
 import io.vertx.ext.jdbc.JDBCClient
 import org.apache.logging.log4j.LogManager
+import java.util.*
 
 object Main {
     val rootLogger = LogManager.getLogger("Server Root")
@@ -64,5 +65,6 @@ object Main {
 fun main(args: Array<String>) {
     System.setProperty("vertx.logger-delegate-factory-class-name", "io.vertx.core.logging.Log4j2LogDelegateFactory")
     System.setProperty("logger-delegate-factory-class-name", "io.vertx.core.logging.Log4j2LogDelegateFactory")
+    TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
     Main.initService()
 }

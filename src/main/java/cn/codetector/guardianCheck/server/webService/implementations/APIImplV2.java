@@ -8,12 +8,15 @@ import cn.codetector.guardianCheck.server.data.students.StudentManager;
 import cn.codetector.guardianCheck.server.data.user.User;
 import cn.codetector.guardianCheck.server.data.user.UserHash;
 import cn.codetector.guardianCheck.server.data.user.UserManager;
+import cn.codetector.guardianCheck.server.mail.MailService;
+import cn.codetector.guardianCheck.server.mail.MailTemplate;
 import cn.codetector.guardianCheck.server.webService.IWebAPIImpl;
 import cn.codetector.guardianCheck.server.webService.WebAPIImpl;
 import cn.codetector.guardianCheck.server.webService.implementations.emoticon.EmoticonManager;
 import cn.codetector.util.Validator.MD5;
 import com.google.common.io.ByteStreams;
-import com.google.common.primitives.Ints;
+import com.google.common.io.CharStreams;
+import com.google.common.primitives.Longs;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -28,10 +31,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 
 @WebAPIImpl(prefix = "v2")
@@ -39,8 +39,16 @@ public class APIImplV2 implements IWebAPIImpl {
     private Logger logger = LoggerFactory.getLogger(this.getClass().getName());
     private Set<String> noAuthExceptions = new HashSet<>();
 
+    private MailTemplate defaultMail = null;
+
     @Override
     public void initAPI(@NotNull Router router, @NotNull Vertx sharedVertx, @NotNull JDBCClient dbClient) {
+        try {
+            defaultMail = new MailTemplate(CharStreams.toString(new InputStreamReader(APIImplV2.class.getResourceAsStream("/email.html"))));
+        } catch (Throwable ignored) {
+            logger.error("Failed to load mailTemplate", ignored);
+        }
+
         //Register exceptions
         noAuthExceptions.add("/v2/api/auth");
 
@@ -214,8 +222,11 @@ public class APIImplV2 implements IWebAPIImpl {
                         if (conn.succeeded()) {
                             String eventId = Long.toString(System.currentTimeMillis(), Character.MAX_RADIX);
                             String eventName = ctx.request().getFormAttribute("eventName");
-                            Integer eventTime = Ints.tryParse(ctx.request().getFormAttribute("eventTime"));
-                            String sql = eventTime == null ? "INSERT INTO `dummyevent` (`eventId`, `eventName`, `eventStatus`) VALUES (?, ?, ?)" : "INSERT INTO `dummyevent` (`eventId`, `eventName`, `eventStatus`,`eventTime`) VALUES (?, ?, ?, ?)";
+                            Long eventTime = null;
+                            if (ctx.request().getFormAttribute("eventTime") != null) {
+                                eventTime = Longs.tryParse(ctx.request().getFormAttribute("eventTime"));
+                            }
+                            String sql = eventTime == null ? "INSERT INTO `dummyevent` (`eventId`, `eventName`, `eventStatus`) VALUES (?, ?, ?)" : "INSERT INTO `dummyevent` (`eventId`, `eventName`, `eventStatus`,`eventTime`) VALUES (?, ?, ?, FROM_UNIXTIME(?))";
                             JsonArray params = new JsonArray().add(eventId).add(eventName).add(0);
                             if (eventTime != null) {
                                 params.add(eventTime);
@@ -399,16 +410,17 @@ public class APIImplV2 implements IWebAPIImpl {
                                 if (res.succeeded()) {
                                     if (res.result().getNumRows() > 0) {
                                         String extraRecipientsStr = ctx.request().getFormAttribute("recipients");
-//                                        JsonArray extraRecipients = null;
+                                        JsonArray extraRecipients = null;
                                         if (extraRecipientsStr != null) {
-//                                            extraRecipients = new JsonObject(extraRecipientsStr).getJsonArray("recipients");
-//                                            sendMail(mailClient, new MailTemplate(defaultMail), dbClient, eventId, res.result().getRows().get(0).getString("eventName"), extraRecipients);
+                                            extraRecipients = new JsonObject(extraRecipientsStr).getJsonArray("recipients");
+                                            sendMail(new MailTemplate(defaultMail), dbClient, eventId, res.result().getRows().get(0).getString("eventName"), extraRecipients);
                                             ctx.response().end();
                                         } else {
                                             ctx.fail(400);
                                         }
+                                    } else {
+                                        ctx.fail(500);
                                     }
-                                    ctx.fail(500);
                                 } else {
                                     ctx.fail(res.cause());
                                 }
@@ -555,7 +567,7 @@ public class APIImplV2 implements IWebAPIImpl {
                 if (result.result()) {
                     String eventId = ctx.pathParam("eventId");
                     String dataStr = ctx.request().getFormAttribute("data");
-                    logger.error("ADD:"+dataStr);
+                    logger.error("ADD: " + dataStr);
                     if (dataStr != null) {
                         JsonObject data = new JsonObject(dataStr);
                         // not required
@@ -589,7 +601,7 @@ public class APIImplV2 implements IWebAPIImpl {
                             });
                             dbClient.getConnection(co -> {
                                 if (co.succeeded()) {
-                                    co.result().batchWithParams("INSERT INTO `dummycheck` (`studentID`, `checkinTime`, `checkoutTime`, `event`) VALUES (?, ?, ?, ?)", addList, res -> {
+                                    co.result().batchWithParams("INSERT IGNORE INTO `dummycheck` (`studentID`, `checkinTime`, `checkoutTime`, `event`) VALUES (?, ?, ?, ?)", addList, res -> {
                                         if (res.succeeded()) {
 //                                            SocketManager.getSharedSocketManager().notifyAllClient(new NetNotificationPacket(Notification.UPDATE_EVENT_CONTENT_ADD,new JsonObject().put("add_students",addDuplicate).toString()));
                                             ctx.response().end();
@@ -654,6 +666,47 @@ public class APIImplV2 implements IWebAPIImpl {
                 e.printStackTrace();
             }
             logger.error(e);
+        });
+    }
+
+    private void sendMail(MailTemplate mailTemplate, JDBCClient client, String formId, String formName, JsonArray extraRecipients) {
+        client.getConnection(sqlConnectionAsyncResult -> {
+            if (sqlConnectionAsyncResult.succeeded()) {
+                sqlConnectionAsyncResult.result().queryWithParams("SELECT (select lastName from dummystudent where dummycheck.studentID = dummystudent.studentID) as lastName, " +
+                        "(select firstName from dummystudent where dummycheck.studentID = dummystudent.studentID) as firstName, " +
+                        "(select nickName from dummystudent where dummycheck.studentID = dummystudent.studentID) as nickName, " +
+                        "(select dorm from dummystudent where dummycheck.studentID = dummystudent.studentID) as dorm, " +
+                        "`checkinTime` ,`checkoutTime` FROM `dummycheck` WHERE `event`=? ORDER BY `lastName` ASC", new JsonArray().add(formId), res -> {
+                    if (res.succeeded()) {
+                        mailTemplate.set("eventName", formName);
+                        mailTemplate.set("eventId", formId);
+                        List<String> lines = new ArrayList<>();
+                        res.result().getRows().forEach(row -> {
+                            StringBuilder sb = new StringBuilder()
+                                    .append(row.getString("lastName"))
+                                    .append(", ")
+                                    .append(row.getString("nickName"))
+                                    .append("-")
+                                    .append(row.getString("dorm", "Day"));
+                            lines.add(sb.toString());
+                        });
+                        mailTemplate.set("count", String.valueOf(lines.size()));
+                        mailTemplate.setTitle(formName);
+                        mailTemplate.setList("studentList", lines);
+                        if (extraRecipients != null) {
+                            extraRecipients.forEach(o -> {
+                                mailTemplate.addRecipient(String.valueOf(o));
+                            });
+                        }
+                        MailService.INSTANCE.sendMessage(MailService.INSTANCE.getEmail(mailTemplate));
+                    } else {
+                        logger.error(res.cause());
+                    }
+                    sqlConnectionAsyncResult.result().close();
+                });
+            } else {
+                logger.error(sqlConnectionAsyncResult.cause());
+            }
         });
     }
 

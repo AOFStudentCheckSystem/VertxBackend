@@ -1,0 +1,121 @@
+<!--
+  ~ Copyright (c) 2016. Codetector (Yaotian Feng)
+  -->
+
+<style>
+    .container {
+        margin-top: 40px;
+        margin-bottom: 40px;
+        margin-left: auto;
+        margin-right: auto;
+        width: 550px;
+        border-radius: 5px;
+        box-shadow: #CCC 0 4px 6px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .header {
+        height: 42px;
+        background-color: #779cf8;
+        padding: 42px 0;
+        text-align: center;
+    }
+
+    .header > img {
+        max-height: 42px;
+        min-height: 42px;
+        display: inline-block;
+    }
+
+    .body {
+        font-family: MicrosoftYaHei, "Hiragino Sans GB";
+        padding: 40px;
+        border: #DDD 1px solid;
+        border-radius: 0 0 5px 5px;
+    }
+
+    .body > h1 {
+        margin: 0 0 40px 0;
+        font-size: 36px;
+        line-height: 40px;
+        font-weight: normal;
+    }
+
+    .body > h2 {
+        margin: 0 0 40px 0;
+        font-size: 24px;
+        line-height: 28px;
+        font-weight: normal;
+    }
+
+    .body > p {
+        margin: 0 0 40px 0;
+        font-size: 14px;
+        line-height: 18px;
+        font-weight: normal;
+    }
+
+    .body > pre {
+        margin: 0 0 40px 0;
+        font-size: 14px;
+        line-height: 32px;
+        text-align: center;
+        font-weight: bold;
+        border-radius: 2px;
+        background: #EEE;
+        border: #DDD 1px solid;
+    }
+
+    .body > .footer {
+        margin-top: 64px;
+        font-size: 14px;
+        line-height: 18px;
+
+        text-align: center;
+        color: #999;
+    }
+
+    .body > .footer a {
+        text-decoration: none;
+        color: #999;
+    }
+
+    .extra {
+        font-family: MicrosoftYaHei, "Hiragino Sans GB";
+        text-align: center;
+        margin-top: 40px;
+        color: #AAA;
+        font-size: 14px;
+        line-height: 24px;
+    }
+
+    .extra img {
+        max-height: 40px;
+        min-height: 40px;
+        margin-bottom: 12px;
+    }
+
+    .randstr {
+        margin-bottom: 50px;
+    }
+</style>
+<div class="container">
+    <div class="body">
+        <p>{{eventName}}: </p>
+        <p>Total: {{count}}</p>
+        <br>
+        {{studentList}}
+
+        <div class="footer">
+            <a href="http://www.avonoldfarms.com">Avon Old Farms School</a>
+            <br>
+            <a>{{eventId}}</a>
+        </div>
+    </div>
+</div>
+
+<div class="extra">
+
+    <br>Avon Old Farms Student Check-in System<br>
+</div>

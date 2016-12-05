@@ -1,22 +1,35 @@
+/*
+ * Copyright (c) 2016. Codetector (Yaotian Feng)
+ */
+
 package cn.codetector.guardianCheck.server.mail
 
 import java.util.*
 
-class MailTemplate constructor(val templateContent: String) {
-    private var sender: String? = null
-    private var title: String? = null
+class MailTemplate constructor(var templateContent: String) {
+
+    private var sender: String = ""
+    private var title: String = ""
     private val recipients: MutableList<String> = ArrayList()
 
-    fun setStringValue(templateKey: String, value: Any) {
-        this.templateContent.replace("{{" + templateKey + "}}", value.toString());
+    constructor(other: MailTemplate) : this(other.templateContent) {
+        this.title = other.title
+        this.sender = other.sender
+        other.recipients.forEach { item ->
+            this.recipients.add(item)
+        }
     }
 
-    fun setListValue(templateKey: String, value: List<Any>) {
-        var sb: StringBuilder = StringBuilder()
+    fun set(templateKey: String, value: Any) {
+        this.templateContent = this.templateContent.replace("{{" + templateKey + "}}", value.toString())
+    }
+
+    fun setList(templateKey: String, value: List<Any>) {
+        val sb: StringBuilder = StringBuilder()
         value.forEach { v ->
             sb.append(v.toString()).append("<br>")
         }
-        this.setStringValue(templateKey, sb.toString())
+        this.set(templateKey, sb.toString())
     }
 
     fun addRecipients(recipients: List<String>) {
@@ -28,7 +41,7 @@ class MailTemplate constructor(val templateContent: String) {
     }
 
     fun setSender(sender: String) {
-        this.sender = sender;
+        this.sender = sender
     }
 
     fun setTitle(title: String) {
@@ -36,7 +49,19 @@ class MailTemplate constructor(val templateContent: String) {
     }
 
     fun isComplete(): Boolean {
-        return (this.sender != null && this.title != null && (this.recipients.size > 0))
+        return (this.sender.isNotBlank() && this.title.isNotBlank() && (this.recipients.size > 0))
+    }
+
+    fun getRecipients(): List<String> {
+        return ArrayList<String>(recipients)
+    }
+
+    fun getTitle(): String {
+        return title
+    }
+
+    fun getPage(): String {
+        return templateContent
     }
 
 

@@ -142,6 +142,28 @@ class WebAPIImpl : IWebAPIImpl {
             }
         }
 
+        router.get("/event/list").handler { ctx ->
+            ctx.user().isAuthorised("readEvent") { v ->
+                if (v.result()) {
+                    dbClient.getConnection { conn ->
+                        if (conn.succeeded()) {
+                            conn.result().query("SELECT `eventId`, `eventName`, UNIX_TIMESTAMP(`eventTime`) as `eventTime`, `eventStatus` FROM `dummyevent` WHERE `eventStatus` >= 0 ORDER BY `eventTime` DESC") { res ->
+                                if (res.succeeded()) {
+                                    ctx.response().end(JsonObject().put("events", res.result().rows).toString())
+                                } else {
+                                    ctx.fail(res.cause())
+                                }
+                                conn.result().close()
+                            }
+                        } else {
+                            ctx.fail(conn.cause())
+                        }
+                    }
+                } else {
+                    ctx.fail(401)
+                }
+            }
+        }
 
         router.post("/test").handler { ctx ->
             ctx.response().end()
