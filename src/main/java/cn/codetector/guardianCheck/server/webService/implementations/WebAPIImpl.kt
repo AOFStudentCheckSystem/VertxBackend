@@ -147,7 +147,7 @@ class WebAPIImpl : IWebAPIImpl {
                 if (v.result()) {
                     dbClient.getConnection { conn ->
                         if (conn.succeeded()) {
-                            conn.result().query("SELECT `eventId`, `eventName`, UNIX_TIMESTAMP(`eventTime`) as `eventTime`, `eventStatus` FROM `dummyevent` WHERE `eventStatus` >= 0 ORDER BY `eventTime` DESC") { res ->
+                            conn.result().query("SELECT `eventId`, `eventName`, UNIX_TIMESTAMP(`eventTime`) as `eventTime`, `eventStatus` FROM `dummyevent` ORDER BY `eventTime` DESC") { res ->
                                 if (res.succeeded()) {
                                     ctx.response().end(JsonObject().put("events", res.result().rows).toString())
                                 } else {
@@ -167,6 +167,30 @@ class WebAPIImpl : IWebAPIImpl {
 
         router.post("/test").handler { ctx ->
             ctx.response().end()
+        }
+
+        router.get("/api/event/:eventId/detail").handler { ctx ->
+            ctx.user().isAuthorised("readEvent") { v ->
+                if (v.result()) {
+                    dbClient.getConnection { conn ->
+                        if (conn.succeeded()) {
+                            conn.result().queryWithParams("SELECT `studentID` as `studentId` ,`checkinTime`, NULL as `checkoutTime` FROM `dummycheck` WHERE `event` = ?",
+                                    JsonArray().add(ctx.pathParam("eventId"))) { res ->
+                                if (res.succeeded()) {
+                                    ctx.response().end(JsonObject().put("students", res.result().rows).toString())
+                                } else {
+                                    ctx.fail(res.cause())
+                                }
+                                conn.result().close()
+                            }
+                        } else {
+                            ctx.fail(conn.cause())
+                        }
+                    }
+                } else {
+                    ctx.fail(401)
+                }
+            }
         }
     }
 }

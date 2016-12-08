@@ -6,8 +6,14 @@ package cn.codetector.guardianCheck.server.data.students
 
 import io.vertx.core.json.JsonObject
 
-data class Student(var firstName: String, var lastName: String, var nickName: String, val studentId: String, var rfid: String, var studentType: StudentType, var dorm: String, var grade: String) {
+data class Student(var firstName: String, var lastName: String, var nickName: String, var studentId: String, var rfid: String, var studentType: StudentType, var dorm: String, var grade: String) {
     constructor(studentId: String) : this("", "", "", studentId, "", StudentType.Unknown, "", "")
+
+    init {
+        if (this.studentId.isNotBlank()) {
+            this.studentId = this.studentId.toUpperCase()
+        }
+    }
 
     val fullName: String
         get() {
