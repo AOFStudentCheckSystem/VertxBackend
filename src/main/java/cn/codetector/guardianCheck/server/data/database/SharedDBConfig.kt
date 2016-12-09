@@ -22,6 +22,7 @@ object SharedDBConfig {
     val db_name = dbConfig.getStringValue("db_name", "sentora_postfix")
     val db_ssl = dbConfig.getStringValue("useSSL", "false")
     val db_charset = dbConfig.getStringValue("charSet", "utf-8")
+    val db_max_idle_time = dbConfig.getIntegerValue("db_max_idle_time", 30)
 
     var dbPrefix: String? = null
         private set
@@ -42,6 +43,7 @@ object SharedDBConfig {
         jsonObject.put("max_pool_size", max_pool_size)
         jsonObject.put("initial_pool_size", initial_pool_size)
         jsonObject.put("url", getDBConnectionURLWithSettings())
+        jsonObject.put("max_idle_time", db_max_idle_time)
         return jsonObject
     }
 

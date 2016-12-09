@@ -8,6 +8,7 @@ import cn.codetector.guardianCheck.server.data.students.StudentManager;
 import cn.codetector.guardianCheck.server.data.user.User;
 import cn.codetector.guardianCheck.server.data.user.UserHash;
 import cn.codetector.guardianCheck.server.data.user.UserManager;
+import cn.codetector.guardianCheck.server.data.user.WebUser;
 import cn.codetector.guardianCheck.server.mail.MailService;
 import cn.codetector.guardianCheck.server.mail.MailTemplate;
 import cn.codetector.guardianCheck.server.webService.IWebAPIImpl;
@@ -82,7 +83,8 @@ public class APIImplV2 implements IWebAPIImpl {
             } else {
                 String auth = ctx.request().getHeader("Authorization").replace("Bearer ", "");
                 if (UserHash.INSTANCE.isAuthKeyValid(auth)) {
-                    ctx.setUser(UserHash.INSTANCE.getUserByAuthKey(auth));
+                    WebUser user = UserHash.INSTANCE.getUserByAuthKey(auth);
+                    ctx.setUser(user);
                     ctx.next();
                 } else {
                     ctx.response().setStatusCode(401).end("Invalid Token");

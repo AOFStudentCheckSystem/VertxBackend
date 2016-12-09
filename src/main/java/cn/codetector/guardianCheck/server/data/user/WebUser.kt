@@ -22,6 +22,7 @@ class WebUser(val user: User) : io.vertx.ext.auth.User {
     }
 
     override fun isAuthorised(authority: String?, resultHandler: Handler<AsyncResult<Boolean>>?): io.vertx.ext.auth.User {
+        this.renewTime()
         resultHandler!!.handle(Future.succeededFuture(user.hasPermission(authority!!)))
         return this
     }

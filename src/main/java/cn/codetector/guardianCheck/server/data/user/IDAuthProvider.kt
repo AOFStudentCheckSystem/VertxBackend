@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2016. Codetector (Yaotian Feng)
+ */
+
 package cn.codetector.guardianCheck.server.data.user
 
 import io.vertx.core.AsyncResult
@@ -11,7 +15,6 @@ import io.vertx.ext.auth.User
  * Created by codetector on 21/11/2016.
  */
 class IDAuthProvider : AuthProvider {
-    val timeout = 1000 * 60 * 30
 
     override fun authenticate(authInfo: JsonObject?, resultHandler: Handler<AsyncResult<User>>?) {
         if (authInfo!!.containsKey("auth")) {
@@ -24,19 +27,4 @@ class IDAuthProvider : AuthProvider {
             resultHandler!!.handle(Future.failedFuture("Malformed authInfo"))
         }
     }
-//    if (authInfo!!.containsKey("username") && authInfo.containsKey("password")){
-//        val username:String = authInfo.getString("username")!!
-//        val password:String = authInfo.getString("password")!!
-//        if (UserManager.hasUser(username)){
-//            if (UserManager.getUserByUsername(username).authenticate(password)){
-//                resultHandler!!.handle(Future.succeededFuture(WebUser(UserManager.getUserByUsername(username))))
-//            }else{
-//                resultHandler!!.handle(Future.failedFuture("Wrong password"))
-//            }
-//        }else{
-//            resultHandler!!.handle(Future.failedFuture("User DNE"))
-//        }
-//    }else{
-//        resultHandler!!.handle(Future.failedFuture("Malformed auth info"))
-//    }
 }
